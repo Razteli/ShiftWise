@@ -217,8 +217,8 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
             </CardHeader>
             <CardContent>
               {editableScheduleData ? (
-                <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-                  <Table className="min-w-full">
+                <ScrollArea className="w-full rounded-md border">
+                  <Table className="min-w-full whitespace-nowrap">
                     <TableHeader>
                       <TableRow>
                         {editableScheduleData.headers.map((header, index) => (
