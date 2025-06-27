@@ -14,7 +14,7 @@ import {z} from 'genkit';
 const AnalyzeShiftScheduleInputSchema = z.object({
   schedule: z.string().describe('The shift schedule in a CSV-compatible format.'),
   employees: z.string().describe('A JSON string representing the list of employees, including their name, status, and level.'),
-  shiftPatterns: z.string().describe('The shift patterns used in the schedule.'),
+  shiftCycleDescription: z.string().describe('A description of the shift cycle used in the schedule.'),
   hoursPerDay: z.number().describe('The number of hours per day.'),
 });
 export type AnalyzeShiftScheduleInput = z.infer<typeof AnalyzeShiftScheduleInputSchema>;
@@ -37,7 +37,7 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
 
 Shift Schedule: {{{schedule}}}
 Employees (JSON): {{{employees}}}
-Shift Patterns: {{{shiftPatterns}}}
+The schedule was generated based on this shift cycle: {{{shiftCycleDescription}}}.
 Hours Per Shift: {{{hoursPerDay}}}`,
 });
 

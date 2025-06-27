@@ -92,7 +92,12 @@ export function ShiftScheduleForm({
         { name: 'David', level: 'junior', status: 'active' },
         { name: 'Eve', level: 'junior', status: 'on_leave' },
       ],
-      shiftPatterns: 'Morning, Afternoon, Night',
+      shiftCycle: {
+        morning: 2,
+        afternoon: 2,
+        night: 2,
+        off: 2,
+      },
       hoursPerDay: 8,
     },
   });
@@ -344,25 +349,70 @@ export function ShiftScheduleForm({
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="shiftPatterns"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Shift Patterns</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g., Morning, Afternoon, Night"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription className="text-xs">
-                        Comma-separated list of shift names.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>Siklus Shift (hari)</FormLabel>
+                   <FormDescription className="text-xs !mt-0">
+                    Atur jumlah hari untuk setiap bagian dari siklus shift.
+                  </FormDescription>
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <FormField
+                      control={form.control}
+                      name="shiftCycle.morning"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Pagi</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="shiftCycle.afternoon"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Siang</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="shiftCycle.night"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Malam</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="shiftCycle.off"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Libur</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormMessage>
+                    {form.formState.errors.shiftCycle?.message || form.formState.errors.shiftCycle?.root?.message}
+                  </FormMessage>
+                </FormItem>
+
                 <FormField
                   control={form.control}
                   name="hoursPerDay"

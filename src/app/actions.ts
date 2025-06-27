@@ -18,9 +18,15 @@ export async function generateAndAnalyzeSchedule(
   try {
     const employeesJson = JSON.stringify(config.employees);
 
+    const { morning, afternoon, night, off } = config.shiftCycle;
+    const shiftCycleDescription =
+      `A cycle of ${morning} morning shifts, ` +
+      `${afternoon} afternoon shifts, ${night} night shifts, ` +
+      `and ${off} days off. The shift names to use in the CSV output are 'Pagi' for morning, 'Siang' for afternoon, 'Malam' for night, and 'Libur' for off days.`;
+
     const suggestionInput = {
       employees: employeesJson,
-      shiftPatterns: config.shiftPatterns,
+      shiftCycleDescription: shiftCycleDescription,
       hoursPerDay: config.hoursPerDay,
     };
 
@@ -32,7 +38,7 @@ export async function generateAndAnalyzeSchedule(
     const analysisInput = {
       schedule: JSON.stringify(suggestionResult.schedule),
       employees: employeesJson,
-      shiftPatterns: config.shiftPatterns,
+      shiftCycleDescription: shiftCycleDescription,
       hoursPerDay: config.hoursPerDay,
     };
 
