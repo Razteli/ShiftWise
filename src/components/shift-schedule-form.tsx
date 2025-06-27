@@ -72,7 +72,7 @@ import { Calendar } from './ui/calendar';
 import { Textarea } from './ui/textarea';
 
 interface ShiftScheduleFormProps {
-  onScheduleGenerated: (result: ScheduleResult) => void;
+  onScheduleGenerated: (result: ScheduleResult, config: ScheduleConfig) => void;
 }
 
 const defaultEmployee: Employee = {
@@ -241,7 +241,7 @@ export function ShiftScheduleForm({
           variant: 'destructive',
         });
       } else if (data) {
-        onScheduleGenerated(data);
+        onScheduleGenerated(data, values);
         toast({
           title: 'Success!',
           description: 'Your shift schedule has been generated.',

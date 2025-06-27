@@ -6,14 +6,19 @@ import { ScheduleDisplay } from '@/components/schedule-display';
 import type { ScheduleResult } from './actions';
 import { Logo } from '@/components/icons';
 import { Github } from 'lucide-react';
+import type { ScheduleConfig } from '@/lib/schemas';
 
 export default function Home() {
-  const [scheduleResult, setScheduleResult] = useState<ScheduleResult | null>(
-    null
-  );
+  const [scheduleData, setScheduleData] = useState<{
+    result: ScheduleResult;
+    config: ScheduleConfig;
+  } | null>(null);
 
-  const handleScheduleGenerated = (result: ScheduleResult) => {
-    setScheduleResult(result);
+  const handleScheduleGenerated = (
+    result: ScheduleResult,
+    config: ScheduleConfig
+  ) => {
+    setScheduleData({ result, config });
   };
 
   return (
@@ -52,7 +57,10 @@ export default function Home() {
             <ShiftScheduleForm onScheduleGenerated={handleScheduleGenerated} />
           </div>
           <div className="lg:flex-[2] w-full">
-            <ScheduleDisplay result={scheduleResult} />
+            <ScheduleDisplay
+              result={scheduleData?.result ?? null}
+              config={scheduleData?.config ?? null}
+            />
           </div>
         </div>
       </main>
