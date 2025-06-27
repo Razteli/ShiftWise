@@ -217,7 +217,10 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
             </CardHeader>
             <CardContent>
               {editableScheduleData ? (
-                <ScrollArea className="w-full rounded-md border">
+                <div
+                  className="relative w-full overflow-auto rounded-md border"
+                  style={{ maxHeight: '70vh' }}
+                >
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -312,7 +315,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                       ))}
                     </TableBody>
                   </Table>
-                </ScrollArea>
+                </div>
               ) : (
                 <div className="flex items-center justify-center text-muted-foreground min-h-[500px]">
                   <p>Could not display schedule. Invalid format received.</p>
