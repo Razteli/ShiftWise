@@ -43,7 +43,14 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { ScrollArea } from './ui/scroll-area';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ScheduleDisplayProps {
   result: ScheduleResult | null;
@@ -132,6 +139,97 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
     }
   };
 
+  const handleExportPdf = () => {
+    if (!editableScheduleData) return;
+
+    // Folio size: 330mm x 216mm (13" x 8.5")
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [330, 216],
+    });
+
+    doc.setFontSize(16);
+    doc.text('Jadwal Shift Karyawan', 14, 15);
+
+    autoTable(doc, {
+      head: [editableScheduleData.headers],
+      body: editableScheduleData.rows,
+      startY: 20,
+      theme: 'grid',
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        valign: 'middle',
+        halign: 'center',
+      },
+      headStyles: {
+        fillColor: [63, 81, 181], // Primary color
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: {
+          // Employee name column
+          halign: 'left',
+          fontStyle: 'bold',
+          minCellWidth: 30,
+        },
+      },
+      willDrawCell: data => {
+        // Reset text color before drawing each cell to avoid color bleed
+        doc.setTextColor(0, 0, 0);
+      },
+      didDrawCell: data => {
+        if (data.column.index > 0 && data.section === 'body') {
+          const cellText =
+            typeof data.cell.text === 'string'
+              ? data.cell.text
+              : data.cell.text[0];
+          const lowerShift = cellText.toLowerCase().trim();
+          let fillColor: [number, number, number] | undefined;
+
+          if (lowerShift.includes('pagi')) {
+            fillColor = [63, 81, 181]; // Primary color (blue-ish)
+            doc.setTextColor(255, 255, 255);
+          } else if (lowerShift.includes('siang')) {
+            fillColor = [250, 235, 215]; // A light orange/peach color for secondary
+            doc.setTextColor(0, 0, 0);
+          } else if (lowerShift.includes('malam')) {
+            fillColor = [220, 53, 69]; // Destructive color (red)
+            doc.setTextColor(255, 255, 255);
+          } else if (lowerShift.includes('libur')) {
+            fillColor = [248, 249, 250]; // A very light grey for outline
+            doc.setTextColor(0, 0, 0);
+          }
+
+          if (fillColor) {
+            doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
+            doc.rect(
+              data.cell.x,
+              data.cell.y,
+              data.cell.width,
+              data.cell.height,
+              'F'
+            );
+            // Redraw text on top of the filled rectangle
+            doc.text(
+              cellText,
+              data.cell.x + data.cell.width / 2,
+              data.cell.y + data.cell.height / 2,
+              {
+                halign: 'center',
+                valign: 'middle',
+              }
+            );
+          }
+        }
+      },
+    });
+
+    doc.save('shift-schedule.pdf');
+  };
+
   const handleShiftChange = (
     rowIndex: number,
     cellIndex: number,
@@ -205,15 +303,26 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                   Tinjau, edit, dan ekspor jadwal yang dihasilkan.
                 </CardDescription>
               </div>
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                size="sm"
-                disabled={!editableScheduleData}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!editableScheduleData}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExport}>
+                    Export as CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPdf}>
+                    Export as PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </CardHeader>
             <CardContent>
               {editableScheduleData ? (
@@ -228,8 +337,8 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                           <TableHead
                             key={index}
                             className={cn(
-                              'whitespace-nowrap',
-                              index === 0 ? 'sticky left-0 bg-card z-10' : ''
+                              'whitespace-nowrap bg-card',
+                              index === 0 ? 'sticky left-0 z-10' : ''
                             )}
                           >
                             {header}
@@ -356,7 +465,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                   <AlertTriangle className="mr-2 h-4 w-4" />
                   Potensi Masalah
                 </h3>
-                <ScrollArea className="h-60 rounded-md border p-4 bg-background/50">
+                <div className="h-60 rounded-md border p-4 bg-background/50 overflow-y-auto">
                   {analysis && analysis.issues.length > 0 ? (
                     <ul className="space-y-2 list-disc pl-5">
                       {analysis.issues.map((issue, index) => (
@@ -370,7 +479,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                       Tidak ada masalah ditemukan.
                     </p>
                   )}
-                </ScrollArea>
+                </div>
               </div>
               <Separator />
               <div>
@@ -378,7 +487,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                   <ListChecks className="mr-2 h-4 w-4" />
                   Saran
                 </h3>
-                <ScrollArea className="h-60 rounded-md border p-4 bg-background/50">
+                <div className="h-60 rounded-md border p-4 bg-background/50 overflow-y-auto">
                   {analysis && analysis.suggestions.length > 0 ? (
                     <ul className="space-y-2 list-disc pl-5">
                       {analysis.suggestions.map((suggestion, index) => (
@@ -392,7 +501,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                       Tidak ada saran yang diberikan.
                     </p>
                   )}
-                </ScrollArea>
+                </div>
               </div>
             </CardContent>
           </Card>
