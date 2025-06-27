@@ -263,7 +263,7 @@ export function ShiftScheduleForm({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="rounded-md border overflow-auto">
+                <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
