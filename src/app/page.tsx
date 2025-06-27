@@ -38,7 +38,7 @@ export default function Home() {
 
       <main className="container mx-auto p-4 md:p-8 flex-grow">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary font-headline">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-primary">
             AI-Powered Shift Scheduling
           </h2>
           <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">

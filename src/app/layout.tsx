@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 
 const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
@@ -22,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={cn('font-body antialiased', inter.variable)}>
+      <body className={cn('antialiased', inter.className)}>
         {children}
         <Toaster />
       </body>
