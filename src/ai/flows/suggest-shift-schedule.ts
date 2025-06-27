@@ -14,7 +14,7 @@ import {z} from 'genkit';
 const SuggestShiftScheduleInputSchema = z.object({
   employees: z.string().describe('A JSON string representing the list of employees, including their name, status (active, on_leave, day_off), and level (junior, intermediate, senior).'),
   shiftCycleDescription: z.string().describe('A description of the shift cycle, e.g., "2 morning days, 2 afternoon days, 2 night days, 2 off days".'),
-  hoursPerDay: z.number().describe('The number of hours per shift.'),
+  employeesPerShift: z.string().describe('A JSON string representing the number of employees required for each shift (morning, afternoon, night).'),
   startDate: z.string().describe('The start date for the schedule period in ISO format.'),
   endDate: z.string().describe('The end date for the schedule period in ISO format.'),
   numberOfDays: z.number().describe('The total number of days in the schedule period.'),
@@ -43,15 +43,15 @@ const prompt = ai.definePrompt({
 
   Employees (JSON): {{{employees}}}
   Shift Cycle: {{{shiftCycleDescription}}}
-  Hours per Shift: {{{hoursPerDay}}}
+  Required Employees per Shift (JSON): {{{employeesPerShift}}}
   {{#if customRule}}
   Custom Rules: {{{customRule}}}
   {{/if}}
 
   Generate a shift schedule that takes into account employee availability, workload balance, and shift requirements.
-  The output schedule should be in a CSV-compatible format, with employee names as rows and dates as columns. The column headers should be "Day 1", "Day 2", ..., up to "Day {{numberOfDays}}".
+  The output schedule should be in a CSV-compatible format, with "Karyawan" as the first column header, followed by date columns: "Day 1", "Day 2", ..., up to "Day {{numberOfDays}}".
   The schedule should follow the provided shift cycle for each available employee. For example, if the cycle involves 2 Pagi shifts, an employee should work 2 Pagi shifts, then continue to the next part of the cycle.
-  Ensure all shifts are covered and employee preferences (status) are considered.
+  Ensure that the number of employees assigned to each shift type on each day meets the requirements specified in 'Required Employees per Shift'. For example, if the requirement for 'Pagi' is 2, then exactly two employees must be assigned 'Pagi' for that day.
   Consider seniority (level) when assigning shifts, balancing workload across all employee classes.
   Employees with status 'on_leave' or 'day_off' should not be assigned any shifts for the entire period.
   {{#if customRule}}

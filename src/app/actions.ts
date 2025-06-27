@@ -18,6 +18,7 @@ export async function generateAndAnalyzeSchedule(
 ): Promise<{ data: ScheduleResult | null; error: string | null }> {
   try {
     const employeesJson = JSON.stringify(config.employees);
+    const employeesPerShiftJson = JSON.stringify(config.employeesPerShift);
 
     const { morning, afternoon, night, off } = config.shiftCycle;
     const shiftCycleDescription =
@@ -34,7 +35,7 @@ export async function generateAndAnalyzeSchedule(
     const suggestionInput = {
       employees: employeesJson,
       shiftCycleDescription: shiftCycleDescription,
-      hoursPerDay: config.hoursPerDay,
+      employeesPerShift: employeesPerShiftJson,
       startDate: config.startDate.toISOString(),
       endDate: config.endDate.toISOString(),
       numberOfDays: numberOfDays,
@@ -50,7 +51,7 @@ export async function generateAndAnalyzeSchedule(
       schedule: JSON.stringify(suggestionResult.schedule),
       employees: employeesJson,
       shiftCycleDescription: shiftCycleDescription,
-      hoursPerDay: config.hoursPerDay,
+      employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
       scheduleDocument: config.scheduleDocument,
     };

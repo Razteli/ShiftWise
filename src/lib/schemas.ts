@@ -27,10 +27,11 @@ export const scheduleConfigSchema = z
           path: ['morning'],
         }
       ),
-    hoursPerDay: z.coerce
-      .number()
-      .min(1, 'Must be at least 1')
-      .max(24, 'Cannot exceed 24'),
+    employeesPerShift: z.object({
+      morning: z.coerce.number().int().min(0, 'Must be 0 or more.'),
+      afternoon: z.coerce.number().int().min(0, 'Must be 0 or more.'),
+      night: z.coerce.number().int().min(0, 'Must be 0 or more.'),
+    }),
     startDate: z.date({ required_error: 'Start date is required.' }),
     endDate: z.date({ required_error: 'End date is required.' }),
     customRule: z.string().optional(),

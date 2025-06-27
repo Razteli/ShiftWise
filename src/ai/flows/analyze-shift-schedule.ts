@@ -15,7 +15,7 @@ const AnalyzeShiftScheduleInputSchema = z.object({
   schedule: z.string().describe('The shift schedule in a CSV-compatible format.'),
   employees: z.string().describe('A JSON string representing the list of employees, including their name, status, and level.'),
   shiftCycleDescription: z.string().describe('A description of the shift cycle used in the schedule.'),
-  hoursPerDay: z.number().describe('The number of hours per day.'),
+  employeesPerShift: z.string().describe('A JSON string representing the number of employees required for each shift (morning, afternoon, night).'),
   customRule: z.string().optional().describe('Additional custom rules provided by the user.'),
   scheduleDocument: z
     .string()
@@ -40,12 +40,14 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
   name: 'analyzeShiftSchedulePrompt',
   input: {schema: AnalyzeShiftScheduleInputSchema},
   output: {schema: AnalyzeShiftScheduleOutputSchema},
-  prompt: `You are a shift schedule analyst. Analyze the provided generated shift schedule and identify potential issues such as employee overload, understaffing during peak hours, and unfair distribution of workload based on employee level (junior, intermediate, senior). Provide suggestions to resolve these issues.
+  prompt: `You are a shift schedule analyst. Analyze the provided generated shift schedule and identify potential issues such as employee overload, understaffing or overstaffing during shifts, and unfair distribution of workload based on employee level (junior, intermediate, senior). Provide suggestions to resolve these issues.
 
 Generated Shift Schedule: {{{schedule}}}
 Employees (JSON): {{{employees}}}
 The schedule was generated based on this shift cycle: {{{shiftCycleDescription}}}.
-Hours Per Shift: {{{hoursPerDay}}}
+Required Employees per Shift (JSON): {{{employeesPerShift}}}
+
+Your analysis should check for understaffing or overstaffing on any given day for any shift, based on the required number of employees.
 
 {{#if customRule}}
 The user also provided these custom rules which should have been followed: {{{customRule}}}

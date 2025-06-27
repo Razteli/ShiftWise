@@ -103,7 +103,11 @@ export function ShiftScheduleForm({
         night: 2,
         off: 2,
       },
-      hoursPerDay: 8,
+      employeesPerShift: {
+        morning: 1,
+        afternoon: 1,
+        night: 1,
+      },
       startDate: new Date(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 29)),
       customRule: '',
@@ -437,6 +441,57 @@ export function ShiftScheduleForm({
                     {form.formState.errors.shiftCycle?.message || form.formState.errors.shiftCycle?.root?.message}
                   </FormMessage>
                 </FormItem>
+                
+                <FormItem>
+                  <FormLabel>Employees per Shift</FormLabel>
+                  <FormDescription className="text-xs !mt-0">
+                    Set the number of employees required for each shift.
+                  </FormDescription>
+                  <div className="grid grid-cols-3 gap-4 pt-2">
+                    <FormField
+                      control={form.control}
+                      name="employeesPerShift.morning"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Pagi</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="employeesPerShift.afternoon"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Siang</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="employeesPerShift.night"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-normal text-sm">Malam</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <FormMessage>
+                    {form.formState.errors.employeesPerShift?.root?.message}
+                  </FormMessage>
+                </FormItem>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
@@ -519,20 +574,6 @@ export function ShiftScheduleForm({
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="hoursPerDay"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Hours per Shift</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}
