@@ -16,22 +16,12 @@ export async function generateAndAnalyzeSchedule(
   config: ScheduleConfig
 ): Promise<{ data: ScheduleResult | null; error: string | null }> {
   try {
-    const numEmployees =
-      config.juniorEmployees +
-      config.intermediateEmployees +
-      config.seniorEmployees;
-
-    // For now, employeeStatuses is a placeholder. A more complex UI would be needed to manage individual statuses.
-    const employeeStatuses = `${numEmployees} employees are active.`;
+    const employeesJson = JSON.stringify(config.employees);
 
     const suggestionInput = {
-      numEmployees,
-      juniorEmployees: config.juniorEmployees,
-      intermediateEmployees: config.intermediateEmployees,
-      seniorEmployees: config.seniorEmployees,
+      employees: employeesJson,
       shiftPatterns: config.shiftPatterns,
       hoursPerDay: config.hoursPerDay,
-      employeeStatuses,
     };
 
     const suggestionResult = await suggestShiftSchedule(suggestionInput);
@@ -41,17 +31,9 @@ export async function generateAndAnalyzeSchedule(
 
     const analysisInput = {
       schedule: JSON.stringify(suggestionResult.schedule),
-      employeeCount: numEmployees,
+      employees: employeesJson,
       shiftPatterns: config.shiftPatterns,
       hoursPerDay: config.hoursPerDay,
-      employeeStatus: JSON.stringify({
-        active: numEmployees,
-        on_leave: 0,
-        day_off: 0,
-      }),
-      juniorCount: config.juniorEmployees,
-      intermediateCount: config.intermediateEmployees,
-      seniorCount: config.seniorEmployees,
     };
 
     const analysisResult = await analyzeShiftSchedule(analysisInput);

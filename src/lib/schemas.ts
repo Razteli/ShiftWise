@@ -1,24 +1,20 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export const scheduleConfigSchema = z
-  .object({
-    juniorEmployees: z.coerce.number().min(0, 'Must be 0 or more'),
-    intermediateEmployees: z.coerce.number().min(0, 'Must be 0 or more'),
-    seniorEmployees: z.coerce.number().min(0, 'Must be 0 or more'),
-    shiftPatterns: z.string().min(1, 'Shift patterns are required'),
-    hoursPerDay: z.coerce
-      .number()
-      .min(1, 'Must be at least 1')
-      .max(24, 'Cannot exceed 24'),
-  })
-  .refine(
-    async (data) =>
-      data.juniorEmployees + data.intermediateEmployees + data.seniorEmployees >
-      0,
-    {
-      message: 'There must be at least one employee.',
-      path: ['juniorEmployees'],
-    }
-  );
+export const employeeSchema = z.object({
+  name: z.string().min(1, 'Name is required.'),
+  status: z.enum(['active', 'on_leave', 'day_off']),
+  level: z.enum(['junior', 'intermediate', 'senior']),
+});
+
+export type Employee = z.infer<typeof employeeSchema>;
+
+export const scheduleConfigSchema = z.object({
+  employees: z.array(employeeSchema).min(1, 'At least one employee is required.'),
+  shiftPatterns: z.string().min(1, 'Shift patterns are required'),
+  hoursPerDay: z.coerce
+    .number()
+    .min(1, 'Must be at least 1')
+    .max(24, 'Cannot exceed 24'),
+});
 
 export type ScheduleConfig = z.infer<typeof scheduleConfigSchema>;

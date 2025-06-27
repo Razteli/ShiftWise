@@ -12,14 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AnalyzeShiftScheduleInputSchema = z.object({
-  schedule: z.string().describe('The shift schedule in JSON format.'),
-  employeeCount: z.number().describe('The total number of employees.'),
+  schedule: z.string().describe('The shift schedule in a CSV-compatible format.'),
+  employees: z.string().describe('A JSON string representing the list of employees, including their name, status, and level.'),
   shiftPatterns: z.string().describe('The shift patterns used in the schedule.'),
   hoursPerDay: z.number().describe('The number of hours per day.'),
-  employeeStatus: z.string().describe('The status of employees (active, leave, day off) in JSON format.'),
-  juniorCount: z.number().describe('The number of junior employees'),
-  intermediateCount: z.number().describe('The number of intermediate employees'),
-  seniorCount: z.number().describe('The number of senior employees'),
 });
 export type AnalyzeShiftScheduleInput = z.infer<typeof AnalyzeShiftScheduleInputSchema>;
 
@@ -37,16 +33,12 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
   name: 'analyzeShiftSchedulePrompt',
   input: {schema: AnalyzeShiftScheduleInputSchema},
   output: {schema: AnalyzeShiftScheduleOutputSchema},
-  prompt: `You are a shift schedule analyst. Analyze the provided shift schedule and identify potential issues such as employee overload, understaffing during peak hours, and unfair distribution of workload based on employee class (junior, intermediate, senior). Provide suggestions to resolve these issues.
+  prompt: `You are a shift schedule analyst. Analyze the provided shift schedule and identify potential issues such as employee overload, understaffing during peak hours, and unfair distribution of workload based on employee level (junior, intermediate, senior). Provide suggestions to resolve these issues.
 
 Shift Schedule: {{{schedule}}}
-Employee Count: {{{employeeCount}}}
+Employees (JSON): {{{employees}}}
 Shift Patterns: {{{shiftPatterns}}}
-Hours Per Day: {{{hoursPerDay}}}
-Employee Status: {{{employeeStatus}}}
-Junior Employee Count: {{{juniorCount}}}
-Intermediate Employee Count: {{{intermediateCount}}}
-Senior Employee Count: {{{seniorCount}}}`,
+Hours Per Shift: {{{hoursPerDay}}}`,
 });
 
 const analyzeShiftScheduleFlow = ai.defineFlow(

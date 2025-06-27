@@ -12,18 +12,14 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestShiftScheduleInputSchema = z.object({
-  numEmployees: z.number().describe('The total number of employees.'),
-  juniorEmployees: z.number().describe('The number of junior employees.'),
-  intermediateEmployees: z.number().describe('The number of intermediate employees.'),
-  seniorEmployees: z.number().describe('The number of senior employees.'),
+  employees: z.string().describe('A JSON string representing the list of employees, including their name, status (active, on_leave, day_off), and level (junior, intermediate, senior).'),
   shiftPatterns: z.string().describe('The shift patterns, e.g., A, B, C.'),
   hoursPerDay: z.number().describe('The number of hours per shift.'),
-  employeeStatuses: z.string().describe('The employee statuses (active, leave, day off) as a string.'),
 });
 export type SuggestShiftScheduleInput = z.infer<typeof SuggestShiftScheduleInputSchema>;
 
 const SuggestShiftScheduleOutputSchema = z.object({
-  schedule: z.string().describe('The suggested shift schedule.'),
+  schedule: z.string().describe('The suggested shift schedule in a CSV-compatible format.'),
 });
 export type SuggestShiftScheduleOutput = z.infer<typeof SuggestShiftScheduleOutputSchema>;
 
@@ -39,19 +35,15 @@ const prompt = ai.definePrompt({
 
   Consider the following inputs to generate a balanced and conflict-free schedule:
 
-  Number of Employees: {{{numEmployees}}}
-  Number of Junior Employees: {{{juniorEmployees}}}
-  Number of Intermediate Employees: {{{intermediateEmployees}}}
-  Number of Senior Employees: {{{seniorEmployees}}}
+  Employees (JSON): {{{employees}}}
   Shift Patterns: {{{shiftPatterns}}}
-  Hours per Day: {{{hoursPerDay}}}
-  Employee Statuses: {{{employeeStatuses}}}
+  Hours per Shift: {{{hoursPerDay}}}
 
   Generate a shift schedule that takes into account employee availability, workload balance, and shift requirements.
-  Return the schedule in a readable format.
-  Ensure all shifts are covered and employee preferences are considered where possible.
-  Consider seniority when assigning shifts, balancing workload across all employee classes.
-  Employees on leave or day off should not be assigned shifts.
+  The output schedule should be in a CSV-compatible format, with employee names as rows and dates/days as columns.
+  Ensure all shifts are covered and employee preferences (status) are considered.
+  Consider seniority (level) when assigning shifts, balancing workload across all employee classes.
+  Employees with status 'on_leave' or 'day_off' should not be assigned shifts.
   `,
 });
 

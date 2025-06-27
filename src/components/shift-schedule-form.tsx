@@ -1,7 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -22,12 +22,19 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, Wand2 } from 'lucide-react';
+import { Loader2, Wand2, Plus, Trash } from 'lucide-react';
 import {
   generateAndAnalyzeSchedule,
   type ScheduleResult,
 } from '@/app/actions';
 import { scheduleConfigSchema, type ScheduleConfig } from '@/lib/schemas';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ShiftScheduleFormProps {
   onScheduleGenerated: (result: ScheduleResult) => void;
@@ -42,12 +49,21 @@ export function ShiftScheduleForm({
   const form = useForm<ScheduleConfig>({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
-      juniorEmployees: 10,
-      intermediateEmployees: 5,
-      seniorEmployees: 2,
+      employees: [
+        { name: 'Alice', level: 'senior', status: 'active' },
+        { name: 'Bob', level: 'intermediate', status: 'active' },
+        { name: 'Charlie', level: 'intermediate', status: 'active' },
+        { name: 'David', level: 'junior', status: 'active' },
+        { name: 'Eve', level: 'junior', status: 'on_leave' },
+      ],
       shiftPatterns: 'Morning, Afternoon, Night',
       hoursPerDay: 8,
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'employees',
   });
 
   const onSubmit = (values: ScheduleConfig) => {
@@ -80,52 +96,118 @@ export function ShiftScheduleForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div>
-              <FormLabel>Employee Classes</FormLabel>
-              <FormDescription className="text-xs mb-2">
-                Number of employees per class.
-              </FormDescription>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-lg bg-background/50">
-                <FormField
-                  control={form.control}
-                  name="juniorEmployees"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Junior</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="intermediateEmployees"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Intermediate</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="seniorEmployees"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Senior</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <FormLabel>Employees</FormLabel>
+                  <FormDescription className="text-xs">
+                    Manage your team members.
+                  </FormDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    append({ name: '', level: 'junior', status: 'active' })
+                  }
+                >
+                  <Plus className="mr-2" />
+                  Add
+                </Button>
               </div>
+
+              <div className="space-y-4 max-h-96 overflow-y-auto p-1">
+                {fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className="flex items-end gap-2 p-3 border rounded-lg bg-background/50"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 flex-grow">
+                      <FormField
+                        control={form.control}
+                        name={`employees.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-2">
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Employee Name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`employees.${index}.level`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Level</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select level" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="junior">Junior</SelectItem>
+                                <SelectItem value="intermediate">
+                                  Intermediate
+                                </SelectItem>
+                                <SelectItem value="senior">Senior</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`employees.${index}.status`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="on_leave">
+                                  On Leave
+                                </SelectItem>
+                                <SelectItem value="day_off">Day Off</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash />
+                      <span className="sr-only">Remove employee</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <FormMessage>
+                {form.formState.errors.employees?.root?.message}
+              </FormMessage>
             </div>
 
             <FormField
