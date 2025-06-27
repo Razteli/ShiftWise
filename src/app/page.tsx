@@ -48,8 +48,12 @@ export default function Home() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <ShiftScheduleForm onScheduleGenerated={handleScheduleGenerated} />
-          <ScheduleDisplay result={scheduleResult} />
+          <div className="lg:flex-1 lg:max-w-md w-full">
+            <ShiftScheduleForm onScheduleGenerated={handleScheduleGenerated} />
+          </div>
+          <div className="lg:flex-[2] w-full">
+            <ScheduleDisplay result={scheduleResult} />
+          </div>
         </div>
       </main>
 

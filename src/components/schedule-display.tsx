@@ -52,7 +52,7 @@ export function ScheduleDisplay({ result }: ScheduleDisplayProps) {
 
   if (!result) {
     return (
-      <Card className="flex-1 lg:flex-[2] h-full shadow-sm">
+      <Card className="h-full shadow-sm">
         <CardHeader>
           <CardTitle>Generated Schedule & Analysis</CardTitle>
           <CardDescription>
@@ -67,7 +67,7 @@ export function ScheduleDisplay({ result }: ScheduleDisplayProps) {
   }
 
   return (
-    <div className="flex-1 lg:flex-[2]">
+    <div>
       <Tabs defaultValue="schedule" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="schedule">Generated Schedule</TabsTrigger>
