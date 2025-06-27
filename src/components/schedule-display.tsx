@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 import {
   Card,
   CardContent,
@@ -9,7 +9,6 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from './ui/separator';
 import { Download, ListChecks, AlertTriangle } from 'lucide-react';
@@ -20,22 +19,36 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 interface ScheduleDisplayProps {
   result: ScheduleResult | null;
 }
 
+const getShiftBadgeVariant = (
+  shift: string
+): 'default' | 'secondary' | 'outline' | 'destructive' => {
+  const lowerShift = shift.toLowerCase().trim();
+  if (lowerShift.includes('pagi')) return 'default';
+  if (lowerShift.includes('siang')) return 'secondary';
+  if (lowerShift.includes('malam')) return 'destructive';
+  if (lowerShift.includes('libur')) return 'outline';
+  return 'secondary';
+};
+
 export function ScheduleDisplay({ result }: ScheduleDisplayProps) {
-  const [editedSchedule, setEditedSchedule] = useState('');
-
-  useEffect(() => {
-    if (result?.schedule) {
-      setEditedSchedule(result.schedule);
-    }
-  }, [result]);
-
   const handleExport = () => {
-    const blob = new Blob([editedSchedule], {
+    if (!result?.schedule) return;
+
+    const blob = new Blob([result.schedule], {
       type: 'text/csv;charset=utf-8;',
     });
     const link = document.createElement('a');
@@ -49,6 +62,28 @@ export function ScheduleDisplay({ result }: ScheduleDisplayProps) {
       document.body.removeChild(link);
     }
   };
+
+  const scheduleData = React.useMemo(() => {
+    if (!result?.schedule) return null;
+    try {
+      const lines = result.schedule.trim().split('\n').filter(Boolean);
+      if (lines.length < 2) return null;
+
+      const headers = lines[0].split(',').map((h) => h.trim());
+      const rows = lines
+        .slice(1)
+        .map((line) => line.split(',').map((cell) => cell.trim()));
+
+      if (rows.some((row) => row.length !== headers.length)) {
+        return null;
+      }
+
+      return { headers, rows };
+    } catch (error) {
+      console.error('Failed to parse schedule CSV', error);
+      return null;
+    }
+  }, [result?.schedule]);
 
   if (!result) {
     return (
@@ -80,22 +115,68 @@ export function ScheduleDisplay({ result }: ScheduleDisplayProps) {
               <div>
                 <CardTitle>Schedule</CardTitle>
                 <CardDescription>
-                  Review, edit, and export the schedule.
+                  Review and export the generated schedule.
                 </CardDescription>
               </div>
-              <Button onClick={handleExport} variant="outline" size="sm">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                size="sm"
+                disabled={!scheduleData}
+              >
                 <Download className="mr-2 h-4 w-4" />
                 Export CSV
               </Button>
             </CardHeader>
             <CardContent>
-              <Textarea
-                value={editedSchedule}
-                onChange={(e) => setEditedSchedule(e.target.value)}
-                className="min-h-[500px] font-mono text-sm bg-background/50"
-                placeholder="Your schedule..."
-                aria-label="Generated shift schedule"
-              />
+              {scheduleData ? (
+                <ScrollArea className="w-full whitespace-nowrap rounded-md border">
+                  <Table className="min-w-full">
+                    <TableHeader>
+                      <TableRow>
+                        {scheduleData.headers.map((header, index) => (
+                          <TableHead
+                            key={index}
+                            className={
+                              index === 0 ? 'sticky left-0 bg-card z-10' : ''
+                            }
+                          >
+                            {header}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {scheduleData.rows.map((row, rowIndex) => (
+                        <TableRow key={rowIndex}>
+                          {row.map((cell, cellIndex) => (
+                            <TableCell
+                              key={cellIndex}
+                              className={
+                                cellIndex === 0
+                                  ? 'font-medium sticky left-0 bg-card z-10'
+                                  : 'text-center'
+                              }
+                            >
+                              {cellIndex === 0 ? (
+                                cell
+                              ) : (
+                                <Badge variant={getShiftBadgeVariant(cell)}>
+                                  {cell}
+                                </Badge>
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              ) : (
+                <div className="flex items-center justify-center text-muted-foreground min-h-[500px]">
+                  <p>Could not display schedule. Invalid format received.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
