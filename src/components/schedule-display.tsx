@@ -152,8 +152,17 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
     doc.setFontSize(16);
     doc.text('Jadwal Shift Karyawan', 14, 15);
 
+    // Modify headers for PDF to show only day numbers
+    const pdfHeaders = editableScheduleData.headers.map(header => {
+      const lowerHeader = header.toLowerCase();
+      if (lowerHeader.startsWith('hari ')) {
+        return lowerHeader.replace('hari ', '').trim();
+      }
+      return header;
+    });
+
     autoTable(doc, {
-      head: [editableScheduleData.headers],
+      head: [pdfHeaders],
       body: editableScheduleData.rows,
       startY: 20,
       theme: 'grid',
@@ -162,11 +171,14 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
         cellPadding: 2,
         valign: 'middle',
         halign: 'center',
+        lineWidth: 0.15,
+        lineColor: [44, 62, 80],
       },
       headStyles: {
         fillColor: [63, 81, 181], // Primary color
         textColor: 255,
         fontStyle: 'bold',
+        lineColor: [44, 62, 80],
       },
       columnStyles: {
         0: {
