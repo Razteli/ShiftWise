@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Wand2, Plus, Trash, Pencil } from 'lucide-react';
+import { CalendarIcon, Loader2, Wand2, Plus, Trash, Pencil } from 'lucide-react';
 import {
   generateAndAnalyzeSchedule,
   type ScheduleResult,
@@ -58,6 +58,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from './ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { Calendar } from './ui/calendar';
+import { Textarea } from './ui/textarea';
 
 interface ShiftScheduleFormProps {
   onScheduleGenerated: (result: ScheduleResult) => void;
@@ -99,6 +104,10 @@ export function ShiftScheduleForm({
         off: 2,
       },
       hoursPerDay: 8,
+      startDate: new Date(),
+      endDate: new Date(new Date().setDate(new Date().getDate() + 29)),
+      customRule: '',
+      scheduleDocument: '',
     },
   });
 
@@ -141,6 +150,22 @@ export function ShiftScheduleForm({
     }
     setEmployeeDialogOpen(false);
   };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue('scheduleDocument', reader.result as string);
+        toast({
+          title: 'File Uploaded',
+          description: `"${file.name}" has been selected for analysis.`,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const onSubmit = (values: ScheduleConfig) => {
     startTransition(async () => {
@@ -413,6 +438,88 @@ export function ShiftScheduleForm({
                   </FormMessage>
                 </FormItem>
 
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Start Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP')
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>End Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP')
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < form.getValues('startDate')
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
                   name="hoursPerDay"
@@ -426,6 +533,37 @@ export function ShiftScheduleForm({
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="customRule"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Custom Rules</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="e.g., 'Alice cannot work night shifts', 'Ensure at least one senior is on duty during weekends'."
+                          className="resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Add any specific constraints or rules for the AI to consider.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormItem>
+                  <FormLabel>Upload Existing Schedule (Optional)</FormLabel>
+                  <FormControl>
+                    <Input type="file" accept="image/*" onChange={handleFileChange} />
+                  </FormControl>
+                  <FormDescription>
+                    Upload an image of a current schedule for the AI to analyze.
+                  </FormDescription>
+                </FormItem>
               </div>
             </CardContent>
           </Card>

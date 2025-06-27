@@ -16,6 +16,13 @@ const AnalyzeShiftScheduleInputSchema = z.object({
   employees: z.string().describe('A JSON string representing the list of employees, including their name, status, and level.'),
   shiftCycleDescription: z.string().describe('A description of the shift cycle used in the schedule.'),
   hoursPerDay: z.number().describe('The number of hours per day.'),
+  customRule: z.string().optional().describe('Additional custom rules provided by the user.'),
+  scheduleDocument: z
+    .string()
+    .optional()
+    .describe(
+      "An image of an existing schedule, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+    ),
 });
 export type AnalyzeShiftScheduleInput = z.infer<typeof AnalyzeShiftScheduleInputSchema>;
 
@@ -33,12 +40,24 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
   name: 'analyzeShiftSchedulePrompt',
   input: {schema: AnalyzeShiftScheduleInputSchema},
   output: {schema: AnalyzeShiftScheduleOutputSchema},
-  prompt: `You are a shift schedule analyst. Analyze the provided shift schedule and identify potential issues such as employee overload, understaffing during peak hours, and unfair distribution of workload based on employee level (junior, intermediate, senior). Provide suggestions to resolve these issues.
+  prompt: `You are a shift schedule analyst. Analyze the provided generated shift schedule and identify potential issues such as employee overload, understaffing during peak hours, and unfair distribution of workload based on employee level (junior, intermediate, senior). Provide suggestions to resolve these issues.
 
-Shift Schedule: {{{schedule}}}
+Generated Shift Schedule: {{{schedule}}}
 Employees (JSON): {{{employees}}}
 The schedule was generated based on this shift cycle: {{{shiftCycleDescription}}}.
-Hours Per Shift: {{{hoursPerDay}}}`,
+Hours Per Shift: {{{hoursPerDay}}}
+
+{{#if customRule}}
+The user also provided these custom rules which should have been followed: {{{customRule}}}
+Your analysis should check if the generated schedule respects these rules.
+{{/if}}
+
+{{#if scheduleDocument}}
+The user has also uploaded an image of a real, existing schedule for context and comparison. Use it to inform your analysis. For example, you can compare the generated schedule to the uploaded one to see if there are significant deviations in patterns, or use it to better understand unstated company policies.
+Uploaded Schedule Image: {{media url=scheduleDocument}}
+{{/if}}
+
+Based on all this information, provide your analysis.`,
 });
 
 const analyzeShiftScheduleFlow = ai.defineFlow(

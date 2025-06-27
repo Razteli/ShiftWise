@@ -3,6 +3,7 @@
 import { suggestShiftSchedule } from '@/ai/flows/suggest-shift-schedule';
 import { analyzeShiftSchedule } from '@/ai/flows/analyze-shift-schedule';
 import type { ScheduleConfig } from '@/lib/schemas';
+import { differenceInDays } from 'date-fns';
 
 export interface ScheduleResult {
   schedule: string;
@@ -24,10 +25,20 @@ export async function generateAndAnalyzeSchedule(
       `${afternoon} afternoon shifts, ${night} night shifts, ` +
       `and ${off} days off. The shift names to use in the CSV output are 'Pagi' for morning, 'Siang' for afternoon, 'Malam' for night, and 'Libur' for off days.`;
 
+    const numberOfDays = differenceInDays(config.endDate, config.startDate) + 1;
+    if (numberOfDays <= 0) {
+      return { data: null, error: 'End date must be after start date.' };
+    }
+
+
     const suggestionInput = {
       employees: employeesJson,
       shiftCycleDescription: shiftCycleDescription,
       hoursPerDay: config.hoursPerDay,
+      startDate: config.startDate.toISOString(),
+      endDate: config.endDate.toISOString(),
+      numberOfDays: numberOfDays,
+      customRule: config.customRule,
     };
 
     const suggestionResult = await suggestShiftSchedule(suggestionInput);
@@ -40,6 +51,8 @@ export async function generateAndAnalyzeSchedule(
       employees: employeesJson,
       shiftCycleDescription: shiftCycleDescription,
       hoursPerDay: config.hoursPerDay,
+      customRule: config.customRule,
+      scheduleDocument: config.scheduleDocument,
     };
 
     const analysisResult = await analyzeShiftSchedule(analysisInput);
