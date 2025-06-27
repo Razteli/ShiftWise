@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={cn('antialiased', inter.className)}>
+      <body className={cn('antialiased', inter.className)} suppressHydrationWarning>
         {children}
         <Toaster />
       </body>
