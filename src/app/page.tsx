@@ -56,7 +56,7 @@ export default function Home() {
           <div className="lg:flex-1 lg:max-w-md w-full">
             <ShiftScheduleForm onScheduleGenerated={handleScheduleGenerated} />
           </div>
-          <div className="lg:flex-[2] w-full">
+          <div className="lg:flex-[2] w-full min-w-0">
             <ScheduleDisplay
               result={scheduleData?.result ?? null}
               config={scheduleData?.config ?? null}

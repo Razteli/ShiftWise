@@ -218,15 +218,16 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
             <CardContent>
               {editableScheduleData ? (
                 <ScrollArea className="w-full rounded-md border">
-                  <Table className="min-w-full whitespace-nowrap">
+                  <Table>
                     <TableHeader>
                       <TableRow>
                         {editableScheduleData.headers.map((header, index) => (
                           <TableHead
                             key={index}
-                            className={
+                            className={cn(
+                              'whitespace-nowrap',
                               index === 0 ? 'sticky left-0 bg-card z-10' : ''
-                            }
+                            )}
                           >
                             {header}
                           </TableHead>
@@ -239,11 +240,12 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                           {row.map((cell, cellIndex) => (
                             <TableCell
                               key={cellIndex}
-                              className={
+                              className={cn(
+                                'whitespace-nowrap',
                                 cellIndex === 0
                                   ? 'font-medium sticky left-0 bg-card z-10'
                                   : 'text-center'
-                              }
+                              )}
                             >
                               {cellIndex === 0 ? (
                                 cell
