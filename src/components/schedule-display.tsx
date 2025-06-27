@@ -121,7 +121,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
     return `${headers}\n${rows}`;
   };
 
-  const handleExport = () => {
+  const handleExportCsv = () => {
     if (!editableScheduleData) return;
     const csvContent = convertDataToCsv(editableScheduleData);
     const blob = new Blob([csvContent], {
@@ -177,30 +177,26 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
         },
       },
       willDrawCell: data => {
-        // Reset text color before drawing each cell to avoid color bleed
-        doc.setTextColor(0, 0, 0);
+        // Prevent autoTable from drawing text for shift cells.
+        // We will draw the colored background in didDrawCell.
+        if (data.column.index > 0 && data.section === 'body') {
+          data.cell.text = [''];
+        }
       },
       didDrawCell: data => {
         if (data.column.index > 0 && data.section === 'body') {
-          const cellText =
-            typeof data.cell.text === 'string'
-              ? data.cell.text
-              : data.cell.text[0];
-          const lowerShift = cellText.toLowerCase().trim();
+          // Get the original text from the raw source
+          const cellText = String(data.cell.raw).toLowerCase().trim();
           let fillColor: [number, number, number] | undefined;
 
-          if (lowerShift.includes('pagi')) {
+          if (cellText.includes('pagi')) {
             fillColor = [63, 81, 181]; // Primary color (blue-ish)
-            doc.setTextColor(255, 255, 255);
-          } else if (lowerShift.includes('siang')) {
+          } else if (cellText.includes('siang')) {
             fillColor = [250, 235, 215]; // A light orange/peach color for secondary
-            doc.setTextColor(0, 0, 0);
-          } else if (lowerShift.includes('malam')) {
+          } else if (cellText.includes('malam')) {
             fillColor = [220, 53, 69]; // Destructive color (red)
-            doc.setTextColor(255, 255, 255);
-          } else if (lowerShift.includes('libur')) {
+          } else if (cellText.includes('libur')) {
             fillColor = [248, 249, 250]; // A very light grey for outline
-            doc.setTextColor(0, 0, 0);
           }
 
           if (fillColor) {
@@ -212,19 +208,36 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
               data.cell.height,
               'F'
             );
-            // Redraw text on top of the filled rectangle
-            doc.text(
-              cellText,
-              data.cell.x + data.cell.width / 2,
-              data.cell.y + data.cell.height / 2,
-              {
-                halign: 'center',
-                valign: 'middle',
-              }
-            );
           }
         }
       },
+    });
+
+    // Add legend after the table
+    const finalY = (doc as any).lastAutoTable.finalY;
+    const legendY = finalY > 0 ? finalY + 10 : 20;
+    doc.setFontSize(10);
+    doc.text('Keterangan:', 14, legendY);
+
+    const legendItems = [
+      { text: 'Pagi', color: [63, 81, 181] },
+      { text: 'Siang', color: [250, 235, 215] },
+      { text: 'Malam', color: [220, 53, 69] },
+      { text: 'Libur', color: [248, 249, 250] },
+    ];
+
+    let legendX = 14;
+    const legendItemY = legendY + 5;
+    const boxSize = 4;
+    const itemGap = 35;
+
+    legendItems.forEach(item => {
+      doc.setFillColor(item.color[0], item.color[1], item.color[2]);
+      doc.setDrawColor(0); // Black border for the box
+      doc.rect(legendX, legendItemY, boxSize, boxSize, 'FD'); // FD is Fill and Draw (stroke)
+      doc.setTextColor(0, 0, 0); // Reset text color to black
+      doc.text(item.text, legendX + boxSize + 2, legendItemY + boxSize - 1);
+      legendX += itemGap;
     });
 
     doc.save('shift-schedule.pdf');
@@ -315,7 +328,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleExport}>
+                  <DropdownMenuItem onClick={handleExportCsv}>
                     Export as CSV
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleExportPdf}>
@@ -337,8 +350,10 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                           <TableHead
                             key={index}
                             className={cn(
-                              'whitespace-nowrap bg-card',
-                              index === 0 ? 'sticky left-0 z-10' : ''
+                              'whitespace-nowrap bg-card p-2',
+                              index === 0
+                                ? 'sticky left-0 z-10 font-medium'
+                                : 'text-center'
                             )}
                           >
                             {header}
@@ -353,14 +368,16 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                             <TableCell
                               key={cellIndex}
                               className={cn(
-                                'whitespace-nowrap',
+                                'p-0',
                                 cellIndex === 0
-                                  ? 'font-medium sticky left-0 bg-card z-10'
+                                  ? 'sticky left-0 z-10 bg-card p-2 font-medium'
                                   : 'text-center'
                               )}
                             >
                               {cellIndex === 0 ? (
-                                cell
+                                <span className="whitespace-nowrap">
+                                  {cell}
+                                </span>
                               ) : (
                                 <Popover
                                   open={
@@ -379,7 +396,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                                         badgeVariants({
                                           variant: getShiftBadgeVariant(cell),
                                         }),
-                                        'cursor-pointer hover:opacity-80 transition-opacity w-20 justify-center'
+                                        'm-1 cursor-pointer hover:opacity-80 transition-opacity w-20 justify-center'
                                       )}
                                     >
                                       {cell}
