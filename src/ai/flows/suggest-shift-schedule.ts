@@ -35,27 +35,27 @@ const prompt = ai.definePrompt({
   name: 'suggestShiftSchedulePrompt',
   input: {schema: SuggestShiftScheduleInputSchema},
   output: {schema: SuggestShiftScheduleOutputSchema},
-  prompt: `You are an AI assistant that suggests optimal shift schedules for employees.
+  prompt: `Anda adalah asisten AI yang menyarankan jadwal shift optimal untuk karyawan.
   
-  Create a schedule for the period from {{startDate}} to {{endDate}}, which is a total of {{numberOfDays}} days.
+  Buat jadwal untuk periode dari {{startDate}} hingga {{endDate}}, yang merupakan total {{numberOfDays}} hari.
 
-  Consider the following inputs to generate a balanced and conflict-free schedule:
+  Pertimbangkan input berikut untuk menghasilkan jadwal yang seimbang dan bebas konflik:
 
-  Employees (JSON): {{{employees}}}
-  Shift Cycle: {{{shiftCycleDescription}}}
-  Required Employees per Shift (JSON): {{{employeesPerShift}}}
+  Karyawan (JSON): {{{employees}}}
+  Siklus Shift: {{{shiftCycleDescription}}}
+  Karyawan yang Dibutuhkan per Shift (JSON): {{{employeesPerShift}}}
   {{#if customRule}}
-  Custom Rules: {{{customRule}}}
+  Aturan Kustom: {{{customRule}}}
   {{/if}}
 
-  Generate a shift schedule that takes into account employee availability, workload balance, and shift requirements.
-  The output schedule should be in a CSV-compatible format, with "Karyawan" as the first column header, followed by date columns: "Day 1", "Day 2", ..., up to "Day {{numberOfDays}}".
-  The schedule should follow the provided shift cycle for each available employee. For example, if the cycle involves 2 Pagi shifts, an employee should work 2 Pagi shifts, then continue to the next part of the cycle.
-  Ensure that the number of employees assigned to each shift type on each day meets the requirements specified in 'Required Employees per Shift'. For example, if the requirement for 'Pagi' is 2, then exactly two employees must be assigned 'Pagi' for that day.
-  Consider seniority (level) when assigning shifts, balancing workload across all employee classes.
-  Employees with status 'on_leave' or 'day_off' should not be assigned any shifts for the entire period.
+  Hasilkan jadwal shift yang mempertimbangkan ketersediaan karyawan, keseimbangan beban kerja, dan persyaratan shift.
+  Jadwal output harus dalam format yang kompatibel dengan CSV, dengan "Karyawan" sebagai header kolom pertama, diikuti oleh kolom tanggal: "Hari 1", "Hari 2", ..., hingga "Hari {{numberOfDays}}".
+  Jadwal harus mengikuti siklus shift yang disediakan untuk setiap karyawan yang tersedia. Misalnya, jika siklus melibatkan 2 shift Pagi, seorang karyawan harus bekerja 2 shift Pagi, kemudian melanjutkan ke bagian siklus berikutnya.
+  Pastikan jumlah karyawan yang ditugaskan untuk setiap jenis shift pada setiap hari memenuhi persyaratan yang ditentukan dalam 'Karyawan yang Dibutuhkan per Shift'. Misalnya, jika persyaratan untuk 'Pagi' adalah 2, maka tepat dua karyawan harus ditugaskan 'Pagi' untuk hari itu.
+  Pertimbangkan senioritas (level) saat menugaskan shift, menyeimbangkan beban kerja di semua kelas karyawan.
+  Karyawan dengan status 'on_leave' atau 'day_off' tidak boleh ditugaskan shift apa pun selama seluruh periode.
   {{#if customRule}}
-  Adhere strictly to all custom rules provided.
+  Patuhi semua aturan kustom yang diberikan dengan ketat.
   {{/if}}
   `,
 });

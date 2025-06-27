@@ -27,8 +27,8 @@ const AnalyzeShiftScheduleInputSchema = z.object({
 export type AnalyzeShiftScheduleInput = z.infer<typeof AnalyzeShiftScheduleInputSchema>;
 
 const AnalyzeShiftScheduleOutputSchema = z.object({
-  issues: z.array(z.string()).describe('An array of identified issues in the shift schedule.'),
-  suggestions: z.array(z.string()).describe('An array of suggestions to resolve the identified issues.'),
+  issues: z.array(z.string()).describe('Daftar masalah yang teridentifikasi dalam jadwal shift.'),
+  suggestions: z.array(z.string()).describe('Daftar saran untuk menyelesaikan masalah yang teridentifikasi.'),
 });
 export type AnalyzeShiftScheduleOutput = z.infer<typeof AnalyzeShiftScheduleOutputSchema>;
 
@@ -40,26 +40,26 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
   name: 'analyzeShiftSchedulePrompt',
   input: {schema: AnalyzeShiftScheduleInputSchema},
   output: {schema: AnalyzeShiftScheduleOutputSchema},
-  prompt: `You are a shift schedule analyst. Analyze the provided generated shift schedule and identify potential issues such as employee overload, understaffing or overstaffing during shifts, and unfair distribution of workload based on employee level (junior, intermediate, senior). Provide suggestions to resolve these issues.
+  prompt: `Anda adalah seorang analis jadwal shift. Analisis jadwal shift yang dibuat dan identifikasi potensi masalah seperti kelebihan beban karyawan, kekurangan atau kelebihan staf selama shift, dan distribusi beban kerja yang tidak adil berdasarkan level karyawan (junior, intermediate, senior). Berikan saran untuk menyelesaikan masalah ini.
 
-Generated Shift Schedule: {{{schedule}}}
-Employees (JSON): {{{employees}}}
-The schedule was generated based on this shift cycle: {{{shiftCycleDescription}}}.
-Required Employees per Shift (JSON): {{{employeesPerShift}}}
+Jadwal Shift yang Dihasilkan: {{{schedule}}}
+Karyawan (JSON): {{{employees}}}
+Jadwal ini dibuat berdasarkan siklus shift berikut: {{{shiftCycleDescription}}}.
+Karyawan yang Dibutuhkan per Shift (JSON): {{{employeesPerShift}}}
 
-Your analysis should check for understaffing or overstaffing on any given day for any shift, based on the required number of employees.
+Analisis Anda harus memeriksa kekurangan atau kelebihan staf pada hari apa pun untuk shift apa pun, berdasarkan jumlah karyawan yang dibutuhkan.
 
 {{#if customRule}}
-The user also provided these custom rules which should have been followed: {{{customRule}}}
-Your analysis should check if the generated schedule respects these rules.
+Pengguna juga memberikan aturan khusus ini yang seharusnya diikuti: {{{customRule}}}
+Analisis Anda harus memeriksa apakah jadwal yang dihasilkan mematuhi aturan ini.
 {{/if}}
 
 {{#if scheduleDocument}}
-The user has also uploaded an image of a real, existing schedule for context and comparison. Use it to inform your analysis. For example, you can compare the generated schedule to the uploaded one to see if there are significant deviations in patterns, or use it to better understand unstated company policies.
-Uploaded Schedule Image: {{media url=scheduleDocument}}
+Pengguna juga telah mengunggah gambar jadwal nyata yang sudah ada untuk konteks dan perbandingan. Gunakan ini untuk menginformasikan analisis Anda. Misalnya, Anda dapat membandingkan jadwal yang dihasilkan dengan yang diunggah untuk melihat apakah ada penyimpangan signifikan dalam pola, atau menggunakannya untuk lebih memahami kebijakan perusahaan yang tidak disebutkan.
+Gambar Jadwal yang Diunggah: {{media url=scheduleDocument}}
 {{/if}}
 
-Based on all this information, provide your analysis.`,
+Berdasarkan semua informasi ini, berikan analisis Anda dalam Bahasa Indonesia.`,
 });
 
 const analyzeShiftScheduleFlow = ai.defineFlow(

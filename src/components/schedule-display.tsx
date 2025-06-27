@@ -9,7 +9,6 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from './ui/separator';
 import {
   Download,
@@ -44,6 +43,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from './ui/scroll-area';
 
 interface ScheduleDisplayProps {
   result: ScheduleResult | null;
@@ -192,17 +192,17 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
     <div>
       <Tabs defaultValue="schedule" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
-          <TabsTrigger value="schedule">Generated Schedule</TabsTrigger>
-          <TabsTrigger value="analysis">AI Analysis</TabsTrigger>
+          <TabsTrigger value="schedule">Jadwal yang Dihasilkan</TabsTrigger>
+          <TabsTrigger value="analysis">Analisis AI</TabsTrigger>
         </TabsList>
 
         <TabsContent value="schedule">
           <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
-                <CardTitle>Schedule</CardTitle>
+                <CardTitle>Jadwal</CardTitle>
                 <CardDescription>
-                  Review, edit, and export the generated schedule.
+                  Tinjau, edit, dan ekspor jadwal yang dihasilkan.
                 </CardDescription>
               </div>
               <Button
@@ -330,9 +330,9 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle>AI Schedule Analysis</CardTitle>
+                  <CardTitle>Analisis Jadwal AI</CardTitle>
                   <CardDescription>
-                    AI-identified issues and suggestions for improvement.
+                    Masalah dan saran perbaikan yang diidentifikasi oleh AI.
                   </CardDescription>
                 </div>
                 <Button
@@ -354,7 +354,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
               <div>
                 <h3 className="font-semibold mb-2 flex items-center text-destructive">
                   <AlertTriangle className="mr-2 h-4 w-4" />
-                  Potential Issues
+                  Potensi Masalah
                 </h3>
                 <ScrollArea className="h-60 rounded-md border p-4 bg-background/50">
                   {analysis && analysis.issues.length > 0 ? (
@@ -367,7 +367,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                     </ul>
                   ) : (
                     <p className="text-sm text-muted-foreground p-4 text-center">
-                      No issues found.
+                      Tidak ada masalah ditemukan.
                     </p>
                   )}
                 </ScrollArea>
@@ -376,7 +376,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
               <div>
                 <h3 className="font-semibold mb-2 flex items-center text-primary">
                   <ListChecks className="mr-2 h-4 w-4" />
-                  Suggestions
+                  Saran
                 </h3>
                 <ScrollArea className="h-60 rounded-md border p-4 bg-background/50">
                   {analysis && analysis.suggestions.length > 0 ? (
@@ -389,7 +389,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
                     </ul>
                   ) : (
                     <p className="text-sm text-muted-foreground p-4 text-center">
-                      No suggestions provided.
+                      Tidak ada saran yang diberikan.
                     </p>
                   )}
                 </ScrollArea>
