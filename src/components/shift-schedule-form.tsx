@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +39,14 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CalendarIcon, Loader2, Wand2, Plus, Trash, Pencil } from 'lucide-react';
+import {
+  CalendarIcon,
+  Loader2,
+  Wand2,
+  Plus,
+  Trash,
+  Pencil,
+} from 'lucide-react';
 import {
   generateAndAnalyzeSchedule,
   type ScheduleResult,
@@ -73,6 +80,8 @@ const defaultEmployee: Employee = {
   level: 'junior',
   status: 'active',
 };
+
+const LOCAL_STORAGE_KEY = 'shiftwise-form-config';
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
@@ -114,6 +123,58 @@ export function ShiftScheduleForm({
       scheduleDocument: '',
     },
   });
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedDataJSON = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (savedDataJSON) {
+          const savedData = JSON.parse(savedDataJSON);
+          const valuesToLoad = {
+            ...savedData,
+            // Convert date strings back to Date objects
+            startDate: savedData.startDate
+              ? new Date(savedData.startDate)
+              : new Date(),
+            endDate: savedData.endDate
+              ? new Date(savedData.endDate)
+              : new Date(new Date().setDate(new Date().getDate() + 29)),
+            // Ensure scheduleDocument is reset
+            scheduleDocument: '',
+          };
+          form.reset(valuesToLoad);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load form data from localStorage', error);
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(LOCAL_STORAGE_KEY);
+      }
+    }
+    // We only want this to run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Save to localStorage on change
+  useEffect(() => {
+    const subscription = form.watch(value => {
+      try {
+        if (typeof window !== 'undefined') {
+          const valueToSave = { ...value };
+          // The file input value (data URI) should not be persisted
+          delete (valueToSave as Partial<ScheduleConfig>).scheduleDocument;
+          window.localStorage.setItem(
+            LOCAL_STORAGE_KEY,
+            JSON.stringify(valueToSave)
+          );
+        }
+      } catch (error) {
+        console.error('Failed to save form data to localStorage', error);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const { fields, append, remove, update } = useFieldArray({
     control: form.control,
@@ -169,7 +230,6 @@ export function ShiftScheduleForm({
       reader.readAsDataURL(file);
     }
   };
-
 
   const onSubmit = (values: ScheduleConfig) => {
     startTransition(async () => {
@@ -288,8 +348,8 @@ export function ShiftScheduleForm({
                     : 'Add Employee'}
                 </DialogTitle>
                 <DialogDescription>
-                  Enter the details for the employee here. Click save when you're
-                  done.
+                  Enter the details for the employee here. Click save when
+                  you're done.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -380,7 +440,7 @@ export function ShiftScheduleForm({
               <div className="space-y-6">
                 <FormItem>
                   <FormLabel>Siklus Shift (hari)</FormLabel>
-                   <FormDescription className="text-xs !mt-0">
+                  <FormDescription className="text-xs !mt-0">
                     Atur jumlah hari untuk setiap bagian dari siklus shift.
                   </FormDescription>
                   <div className="grid grid-cols-2 gap-4 pt-2">
@@ -389,7 +449,9 @@ export function ShiftScheduleForm({
                       name="shiftCycle.morning"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Pagi</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Pagi
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -402,7 +464,9 @@ export function ShiftScheduleForm({
                       name="shiftCycle.afternoon"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Siang</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Siang
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -415,7 +479,9 @@ export function ShiftScheduleForm({
                       name="shiftCycle.night"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Malam</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Malam
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -428,7 +494,9 @@ export function ShiftScheduleForm({
                       name="shiftCycle.off"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Libur</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Libur
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -438,10 +506,11 @@ export function ShiftScheduleForm({
                     />
                   </div>
                   <FormMessage>
-                    {form.formState.errors.shiftCycle?.message || form.formState.errors.shiftCycle?.root?.message}
+                    {form.formState.errors.shiftCycle?.message ||
+                      form.formState.errors.shiftCycle?.root?.message}
                   </FormMessage>
                 </FormItem>
-                
+
                 <FormItem>
                   <FormLabel>Employees per Shift</FormLabel>
                   <FormDescription className="text-xs !mt-0">
@@ -453,7 +522,9 @@ export function ShiftScheduleForm({
                       name="employeesPerShift.morning"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Pagi</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Pagi
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -466,7 +537,9 @@ export function ShiftScheduleForm({
                       name="employeesPerShift.afternoon"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Siang</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Siang
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -479,7 +552,9 @@ export function ShiftScheduleForm({
                       name="employeesPerShift.night"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-normal text-sm">Malam</FormLabel>
+                          <FormLabel className="font-normal text-sm">
+                            Malam
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -493,7 +568,7 @@ export function ShiftScheduleForm({
                   </FormMessage>
                 </FormItem>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="startDate"
@@ -562,7 +637,7 @@ export function ShiftScheduleForm({
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                              disabled={(date) =>
+                              disabled={date =>
                                 date < form.getValues('startDate')
                               }
                               initialFocus
@@ -589,7 +664,8 @@ export function ShiftScheduleForm({
                         />
                       </FormControl>
                       <FormDescription>
-                        Add any specific constraints or rules for the AI to consider.
+                        Add any specific constraints or rules for the AI to
+                        consider.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -599,7 +675,11 @@ export function ShiftScheduleForm({
                 <FormItem>
                   <FormLabel>Upload Existing Schedule (Optional)</FormLabel>
                   <FormControl>
-                    <Input type="file" accept="image/*" onChange={handleFileChange} />
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
                   </FormControl>
                   <FormDescription>
                     Upload an image of a current schedule for the AI to analyze.
