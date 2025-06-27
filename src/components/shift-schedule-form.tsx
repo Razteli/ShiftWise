@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
@@ -73,18 +73,20 @@ import { Textarea } from './ui/textarea';
 
 interface ShiftScheduleFormProps {
   onScheduleGenerated: (result: ScheduleResult, config: ScheduleConfig) => void;
+  schedule: string | null;
 }
 
 const defaultEmployee: Employee = {
   name: '',
   level: 'junior',
-  status: 'active',
+  status: 'aktif',
 };
 
 const LOCAL_STORAGE_KEY = 'shiftwise-form-config';
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
+  schedule,
 }: ShiftScheduleFormProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -100,11 +102,11 @@ export function ShiftScheduleForm({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
       employees: [
-        { name: 'Alice', level: 'senior', status: 'active' },
-        { name: 'Bob', level: 'intermediate', status: 'active' },
-        { name: 'Charlie', level: 'intermediate', status: 'active' },
-        { name: 'David', level: 'junior', status: 'active' },
-        { name: 'Eve', level: 'junior', status: 'on_leave' },
+        { name: 'Alice', level: 'senior', status: 'aktif' },
+        { name: 'Bob', level: 'intermediate', status: 'aktif' },
+        { name: 'Charlie', level: 'intermediate', status: 'aktif' },
+        { name: 'David', level: 'junior', status: 'aktif' },
+        { name: 'Eve', level: 'junior', status: 'cuti' },
       ],
       shiftCycle: {
         morning: 2,
@@ -123,6 +125,32 @@ export function ShiftScheduleForm({
       scheduleDocument: '',
     },
   });
+
+  const offDayCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    if (!schedule) {
+      return counts;
+    }
+    try {
+      const lines = schedule.trim().split('\n').filter(Boolean);
+      if (lines.length < 2) return counts;
+
+      // Start from 1 to skip header
+      for (let i = 1; i < lines.length; i++) {
+        const cells = lines[i].split(',').map(cell => cell.trim());
+        const employeeName = cells[0];
+        if (employeeName) {
+          const offDays = cells
+            .slice(1)
+            .filter(cell => cell.toLowerCase() === 'libur').length;
+          counts.set(employeeName, offDays);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse schedule for off-day counts', error);
+    }
+    return counts;
+  }, [schedule]);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -270,6 +298,7 @@ export function ShiftScheduleForm({
                         <TableHead>Name</TableHead>
                         <TableHead>Level</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Jumlah Libur</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -285,14 +314,17 @@ export function ShiftScheduleForm({
                           <TableCell>
                             <Badge
                               variant={
-                                field.status === 'active'
+                                field.status === 'aktif'
                                   ? 'secondary'
                                   : 'outline'
                               }
                               className="capitalize"
                             >
-                              {field.status.replace('_', ' ')}
+                              {field.status}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {offDayCounts.get(field.name) ?? '-'}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
@@ -414,9 +446,9 @@ export function ShiftScheduleForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="on_leave">On Leave</SelectItem>
-                      <SelectItem value="day_off">Day Off</SelectItem>
+                      <SelectItem value="aktif">Aktif</SelectItem>
+                      <SelectItem value="cuti">Cuti</SelectItem>
+                      <SelectItem value="libur">Libur</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
