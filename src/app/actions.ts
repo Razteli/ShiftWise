@@ -27,7 +27,7 @@ export async function generateAndAnalyzeSchedule(
     const shiftCycleDescription =
       `Sebuah siklus dari ${morning} shift Pagi, ` +
       `${afternoon} shift Siang, ${night} shift Malam, ` +
-      `dan ${off} hari Libur. Nama shift yang akan digunakan dalam output CSV adalah 'Pagi' untuk shift pagi, 'Siang' untuk shift sore, 'Malam' untuk shift malam, dan 'Libur' untuk hari libur.`;
+      `dan ${off} hari Libur.`;
 
     const numberOfDays = differenceInDays(config.endDate, config.startDate) + 1;
     if (numberOfDays <= 0) {
@@ -87,7 +87,7 @@ export async function reanalyzeSchedule(
     const shiftCycleDescription =
       `Sebuah siklus dari ${morning} shift Pagi, ` +
       `${afternoon} shift Siang, ${night} shift Malam, ` +
-      `dan ${off} hari Libur. Nama shift yang akan digunakan dalam output CSV adalah 'Pagi' untuk shift pagi, 'Siang' untuk shift sore, 'Malam' untuk shift malam, dan 'Libur' untuk hari libur.`;
+      `dan ${off} hari Libur.`;
 
     const analysisInput = {
       schedule: schedule,

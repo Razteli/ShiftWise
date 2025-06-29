@@ -46,15 +46,17 @@ Gunakan informasi berikut untuk membuat jadwal:
 - Aturan Tambahan: {{{customRule}}}
 {{/if}}
 
-Tujuan utama Anda adalah memenuhi **Persyaratan Karyawan per Shift** untuk setiap hari (Pagi, Siang, Malam).
-Gunakan **Pola Siklus Shift** sebagai panduan utama untuk rotasi karyawan, tetapi prioritas utama adalah memenuhi jumlah staf harian.
-Seimbangkan beban kerja antar karyawan, dengan mempertimbangkan level senioritas mereka.
-Karyawan dengan status 'on_leave' atau 'day_off' TIDAK BOLEH dijadwalkan sama sekali.
+**Kendala Penting:**
+1.  **Prioritas Utama:** Penuhi **Persyaratan Karyawan per Shift** untuk setiap shift (Pagi, Siang, Malam) di setiap hari.
+2.  **Panduan Siklus:** Gunakan **Pola Siklus Shift** sebagai panduan untuk rotasi, tetapi boleh dilanggar jika diperlukan untuk memenuhi persyaratan staf.
+3.  **Status Karyawan:** Karyawan dengan status 'on_leave' atau 'day_off' **TIDAK BOLEH** dijadwalkan sama sekali. Jadwalkan **HANYA** karyawan dengan status 'active'.
+4.  **Keseimbangan:** Seimbangkan beban kerja antar karyawan aktif.
 
-Format output HARUS berupa string CSV yang valid.
-- Baris pertama adalah header: "Karyawan", "Hari 1", "Hari 2", ..., "Hari {{numberOfDays}}".
-- Setiap baris berikutnya mewakili satu karyawan.
-- Gunakan nilai shift yang tepat seperti yang dijelaskan dalam siklus: 'Pagi', 'Siang', 'Malam', 'Libur'.
+**Format Output (WAJIB DIPATUHI):**
+- Output HARUS berupa string **CSV yang valid**, dan tidak ada teks lain sebelum atau sesudahnya.
+- Baris pertama adalah header: "Karyawan", diikuti oleh "Hari 1", "Hari 2", ..., "Hari {{numberOfDays}}".
+- Setiap baris berikutnya mewakili satu karyawan yang berstatus 'active'.
+- Gunakan **hanya** nilai-nilai berikut untuk sel jadwal: 'Pagi', 'Siang', 'Malam', 'Libur'. Jangan gunakan nilai lain.
 `,
 });
 
