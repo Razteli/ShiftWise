@@ -412,45 +412,57 @@ export function ShiftScheduleForm({
                   <Label htmlFor="level" className="text-right">
                     Level
                   </Label>
-                  <Select
-                    value={currentEmployee.level}
-                    onValueChange={(value: Employee['level']) =>
-                      setCurrentEmployee({ ...currentEmployee, level: value })
-                    }
-                  >
-                    <FormControl className="col-span-3">
-                      <SelectTrigger>
+                  <div className="col-span-3">
+                    <Select
+                      value={currentEmployee.level}
+                      onValueChange={(value: Employee['level']) =>
+                        setCurrentEmployee({ ...currentEmployee, level: value })
+                      }
+                    >
+                      <SelectTrigger id="level">
                         <SelectValue placeholder="Select level" />
                       </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="junior">Junior</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="senior">Senior</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <SelectContent>
+                        <SelectItem value="junior">Junior</SelectItem>
+                        <SelectItem value="intermediate">
+                          Intermediate
+                        </SelectItem>
+                        <SelectItem value="senior">Senior</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {dialogErrors.level && (
+                      <p className="text-sm text-destructive mt-1">
+                        {dialogErrors.level}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="status" className="text-right">
                     Status
                   </Label>
-                  <Select
-                    value={currentEmployee.status}
-                    onValueChange={(value: Employee['status']) =>
-                      setCurrentEmployee({ ...currentEmployee, status: value })
-                    }
-                  >
-                    <FormControl className="col-span-3">
-                      <SelectTrigger>
+                  <div className="col-span-3">
+                    <Select
+                      value={currentEmployee.status}
+                      onValueChange={(value: Employee['status']) =>
+                        setCurrentEmployee({ ...currentEmployee, status: value })
+                      }
+                    >
+                      <SelectTrigger id="status">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="aktif">Aktif</SelectItem>
-                      <SelectItem value="cuti">Cuti</SelectItem>
-                      <SelectItem value="libur">Libur</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <SelectContent>
+                        <SelectItem value="aktif">Aktif</SelectItem>
+                        <SelectItem value="cuti">Cuti</SelectItem>
+                        <SelectItem value="libur">Libur</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {dialogErrors.status && (
+                      <p className="text-sm text-destructive mt-1">
+                        {dialogErrors.status}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
               <DialogFooter>
