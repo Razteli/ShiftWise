@@ -25,9 +25,9 @@ export async function generateAndAnalyzeSchedule(
 
     const { morning, afternoon, night, off } = config.shiftCycle;
     const shiftCycleDescription =
-      `A cycle of ${morning} morning shifts, ` +
-      `${afternoon} afternoon shifts, ${night} night shifts, ` +
-      `and ${off} days off. The shift names to use in the CSV output are 'Pagi' for morning, 'Siang' for afternoon, 'Malam' for night, and 'Libur' for off days.`;
+      `Sebuah siklus dari ${morning} shift Pagi, ` +
+      `${afternoon} shift Siang, ${night} shift Malam, ` +
+      `dan ${off} hari Libur. Nama shift yang akan digunakan dalam output CSV adalah 'Pagi' untuk shift pagi, 'Siang' untuk shift sore, 'Malam' untuk shift malam, dan 'Libur' untuk hari libur.`;
 
     const numberOfDays = differenceInDays(config.endDate, config.startDate) + 1;
     if (numberOfDays <= 0) {
@@ -50,7 +50,7 @@ export async function generateAndAnalyzeSchedule(
     }
 
     const analysisInput = {
-      schedule: JSON.stringify(suggestionResult.schedule),
+      schedule: suggestionResult.schedule,
       employees: employeesJson,
       shiftCycleDescription: shiftCycleDescription,
       employeesPerShift: employeesPerShiftJson,
@@ -85,12 +85,12 @@ export async function reanalyzeSchedule(
 
     const { morning, afternoon, night, off } = config.shiftCycle;
     const shiftCycleDescription =
-      `A cycle of ${morning} morning shifts, ` +
-      `${afternoon} afternoon shifts, ${night} night shifts, ` +
-      `and ${off} days off. The shift names to use in the CSV output are 'Pagi' for morning, 'Siang' for afternoon, 'Malam' for night, and 'Libur' for off days.`;
+      `Sebuah siklus dari ${morning} shift Pagi, ` +
+      `${afternoon} shift Siang, ${night} shift Malam, ` +
+      `dan ${off} hari Libur. Nama shift yang akan digunakan dalam output CSV adalah 'Pagi' untuk shift pagi, 'Siang' untuk shift sore, 'Malam' untuk shift malam, dan 'Libur' untuk hari libur.`;
 
     const analysisInput = {
-      schedule: JSON.stringify(schedule),
+      schedule: schedule,
       employees: employeesJson,
       shiftCycleDescription: shiftCycleDescription,
       employeesPerShift: employeesPerShiftJson,
