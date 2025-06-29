@@ -61,29 +61,24 @@ const prompt = ai.definePrompt({
   name: 'suggestShiftSchedulePrompt',
   input: {schema: SuggestShiftScheduleInputSchema},
   output: {schema: SuggestShiftScheduleOutputSchema},
-  prompt: `**TUGAS**: Buat jadwal shift dalam format CSV.
+  prompt: `Anda adalah asisten penjadwalan AI. Tugas Anda adalah membuat jadwal shift untuk karyawan dalam format CSV.
 
-**ATURAN UTAMA (WAJIB DIPATUHI):**
-1.  **PENUHI KEBUTUHAN STAF**: Untuk setiap hari, jumlah karyawan yang bekerja di setiap shift ('Pagi', 'Siang', 'Malam') HARUS SAMA PERSIS dengan nilai di \`{{{employeesPerShift}}}\`. Ini adalah prioritas tertinggi.
-2.  **KARYAWAN TIDAK AKTIF**: Karyawan dengan status BUKAN 'active' (misalnya 'on_leave', 'day_off') TIDAK BOLEH dijadwalkan. Abaikan mereka sepenuhnya.
-3.  **HANYA KARYAWAN AKTIF**: Hanya karyawan dengan status 'active' dari \`{{{employees}}}\` yang boleh ada di jadwal.
-4.  **KESEIMBANGAN KERJA**: Sebisa mungkin, distribusikan jumlah total shift dan hari 'Libur' secara merata di antara semua karyawan aktif.
+Data Input:
+- Karyawan: {{{employees}}} (Perhatikan status: 'active', 'on_leave', 'day_off')
+- Kebutuhan Staf Harian: {{{employeesPerShift}}}
+- Panduan Siklus Shift: {{{shiftCycle}}}
+- Periode: {{startDate}} hingga {{endDate}} (Total {{numberOfDays}} hari)
+- Aturan Tambahan: {{#if customRule}}{{{customRule}}}{{else}}Tidak ada.{{/if}}
 
-**PANDUAN (FLEKSIBEL):**
-*   **SIKLUS SHIFT**: Gunakan \`{{{shiftCycle}}}\` sebagai panduan untuk rotasi shift (misalnya, beberapa hari Pagi berturut-turut). Aturan ini BOLEH dilanggar jika diperlukan untuk memenuhi **ATURAN UTAMA**.
+ATURAN UTAMA (HARUS DIPATUHI):
+1.  **Penuhi Kebutuhan Staf**: Untuk SETIAP HARI, jumlah karyawan di setiap shift ('Pagi', 'Siang', 'Malam') HARUS SAMA PERSIS dengan angka di 'Kebutuhan Staf Harian'. Ini adalah prioritas tertinggi.
+2.  **Hanya Karyawan Aktif**: Hanya karyawan dengan status 'active' yang boleh dijadwalkan. Abaikan karyawan dengan status 'on_leave' atau 'day_off'.
+3.  **Keseimbangan Kerja**: Sebisa mungkin, distribusikan jumlah total shift dan hari 'Libur' secara merata di antara semua karyawan aktif.
 
-**DATA INPUT:**
-*   Periode Jadwal: \`{{startDate}}\` hingga \`{{endDate}}\` (Total \`{{numberOfDays}}\` hari).
-*   Daftar Karyawan (JSON): \`{{{employees}}}\`
-*   Kebutuhan Staf per Shift (JSON): \`{{{employeesPerShift}}}\`
-*   Panduan Siklus Shift (JSON): \`{{{shiftCycle}}}\`
-*   Aturan Khusus: \`{{#if customRule}}{{{customRule}}}{{else}}Tidak ada.{{/if}}\`
-
-**FORMAT OUTPUT (SANGAT PENTING):**
-*   **HANYA CSV**: Kembalikan HANYA string CSV mentah. JANGAN sertakan teks, penjelasan, atau pemformatan markdown lain seperti \`\`\`csv.
-*   **HEADER**: Baris pertama HARUS: \`Karyawan,Hari 1,Hari 2,...,Hari {{numberOfDays}}\`
-*   **BARIS**: Setiap baris berikutnya adalah untuk satu karyawan aktif.
-*   **NILAI SEL**: Gunakan HANYA nilai ini untuk jadwal: \`Pagi\`, \`Siang\`, \`Malam\`, \`Libur\`.
+FORMAT OUTPUT (SANGAT PENTING):
+- Kembalikan HANYA string CSV mentah. JANGAN sertakan teks, penjelasan, atau pemformatan markdown lain seperti \`\`\`csv.
+- Baris Header: \`Karyawan,Hari 1,Hari 2,...,Hari {{numberOfDays}}\`
+- Nilai Sel: Gunakan HANYA nilai ini untuk jadwal: \`Pagi\`, \`Siang\`, \`Malam\`, \`Libur\`.
 `,
 });
 
