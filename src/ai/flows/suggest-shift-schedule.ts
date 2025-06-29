@@ -20,7 +20,7 @@ const SuggestShiftScheduleInputSchema = z.object({
   shiftCycle: z
     .string()
     .describe(
-      'A JSON string representing the desired shift cycle configuration (e.g., {"morning": 2, "afternoon": 2, "night": 2, "off": 2}).'
+      'A JSON string representing the desired shift cycle configuration (e.g., {"morning": 2, "afternoon": 2, "night": 2, "off": 2}). This is used for analysis, not direct generation.'
     ),
   employeesPerShift: z
     .string()
@@ -61,26 +61,33 @@ const prompt = ai.definePrompt({
   name: 'suggestShiftSchedulePrompt',
   input: {schema: SuggestShiftScheduleInputSchema},
   output: {schema: SuggestShiftScheduleOutputSchema},
-  prompt: `Anda adalah asisten penjadwalan AI. Tugas Anda adalah membuat jadwal shift untuk karyawan dalam format CSV.
+  prompt: `Anda adalah AI yang sangat ahli dalam membuat jadwal shift karyawan dalam format CSV.
 
-Data Input:
-- Karyawan: {{{employees}}} (Perhatikan status: 'active', 'on_leave', 'day_off')
-- Kebutuhan Staf Harian: {{{employeesPerShift}}}
-- Panduan Siklus Shift: {{{shiftCycle}}}
-- Periode: {{startDate}} hingga {{endDate}} (Total {{numberOfDays}} hari)
-- Aturan Tambahan: {{#if customRule}}{{{customRule}}}{{else}}Tidak ada.{{/if}}
+TUGAS ANDA: Buat jadwal untuk {{numberOfDays}} hari.
 
-ATURAN UTAMA (HARUS DIPATUHI):
-1.  **Penuhi Kebutuhan Staf**: Untuk SETIAP HARI, jumlah karyawan di setiap shift ('Pagi', 'Siang', 'Malam') HARUS SAMA PERSIS dengan angka di 'Kebutuhan Staf Harian'. Ini adalah prioritas tertinggi.
-2.  **Hanya Karyawan Aktif**: Hanya karyawan dengan status 'active' yang boleh dijadwalkan. Abaikan karyawan dengan status 'on_leave' atau 'day_off'.
-3.  **Keseimbangan Kerja**: Sebisa mungkin, distribusikan jumlah total shift dan hari 'Libur' secara merata di antara semua karyawan aktif.
+ATURAN PALING PENTING (HARUS DIPATUHI):
+1.  **KEBUTUHAN STAF HARIAN**: Gunakan JSON ini untuk mengetahui berapa banyak orang yang dibutuhkan setiap shift, setiap hari. ANDA HARUS MEMENUHI JUMLAH INI SECARA TEPAT.
+    \`\`\`json
+    {{{employeesPerShift}}}
+    \`\`\`
+2.  **DAFTAR KARYAWAN**: Gunakan JSON ini. Hanya jadwalkan karyawan dengan status 'active'.
+    \`\`\`json
+    {{{employees}}}
+    \`\`\`
+3.  **KESEIMBANGAN**: Sebisa mungkin, berikan jumlah total shift ('Pagi', 'Siang', 'Malam') dan hari 'Libur' yang merata untuk semua karyawan 'active'.
 
-FORMAT OUTPUT (SANGAT PENTING):
-- Kembalikan HANYA string CSV mentah. JANGAN sertakan teks, penjelasan, atau pemformatan markdown lain seperti \`\`\`csv.
-- Baris Header: \`Karyawan,Hari 1,Hari 2,...,Hari {{numberOfDays}}\`
-- Nilai Sel: Gunakan HANYA nilai ini untuk jadwal: \`Pagi\`, \`Siang\`, \`Malam\`, \`Libur\`.
+{{#if customRule}}
+ATURAN TAMBAHAN DARI PENGGUNA:
+- {{{customRule}}}
+{{/if}}
+
+FORMAT OUTPUT (WAJIB):
+- Kembalikan HANYA string CSV mentah. Tidak ada teks atau penjelasan lain.
+- Header: \`Karyawan,Hari 1,Hari 2,...,Hari {{numberOfDays}}\`
+- Nilai sel harus salah satu dari: \`Pagi\`, \`Siang\`, \`Malam\`, atau \`Libur\`.
 `,
 });
+
 
 const suggestShiftScheduleFlow = ai.defineFlow(
   {
