@@ -49,7 +49,7 @@ Gunakan informasi berikut untuk membuat jadwal:
 Tujuan utama Anda adalah memenuhi **Persyaratan Karyawan per Shift** untuk setiap hari (Pagi, Siang, Malam).
 Gunakan **Pola Siklus Shift** sebagai panduan utama untuk rotasi karyawan, tetapi prioritas utama adalah memenuhi jumlah staf harian.
 Seimbangkan beban kerja antar karyawan, dengan mempertimbangkan level senioritas mereka.
-Karyawan dengan status 'cuti' atau 'libur' TIDAK BOLEH dijadwalkan sama sekali.
+Karyawan dengan status 'on_leave' atau 'day_off' TIDAK BOLEH dijadwalkan sama sekali.
 
 Format output HARUS berupa string CSV yang valid.
 - Baris pertama adalah header: "Karyawan", "Hari 1", "Hari 2", ..., "Hari {{numberOfDays}}".

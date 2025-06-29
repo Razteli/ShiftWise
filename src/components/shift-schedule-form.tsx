@@ -79,7 +79,7 @@ interface ShiftScheduleFormProps {
 const defaultEmployee: Employee = {
   name: '',
   level: 'junior',
-  status: 'aktif',
+  status: 'active',
 };
 
 const LOCAL_STORAGE_KEY = 'shiftwise-form-config';
@@ -98,15 +98,21 @@ export function ShiftScheduleForm({
     useState<Employee>(defaultEmployee);
   const [dialogErrors, setDialogErrors] = useState<Partial<Employee>>({});
 
+  const statusMap: Record<Employee['status'], string> = {
+    active: 'Aktif',
+    on_leave: 'Cuti',
+    day_off: 'Libur',
+  };
+
   const form = useForm<ScheduleConfig>({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
       employees: [
-        { name: 'Alice', level: 'senior', status: 'aktif' },
-        { name: 'Bob', level: 'intermediate', status: 'aktif' },
-        { name: 'Charlie', level: 'intermediate', status: 'aktif' },
-        { name: 'David', level: 'junior', status: 'aktif' },
-        { name: 'Eve', level: 'junior', status: 'cuti' },
+        { name: 'Alice', level: 'senior', status: 'active' },
+        { name: 'Bob', level: 'intermediate', status: 'active' },
+        { name: 'Charlie', level: 'intermediate', status: 'active' },
+        { name: 'David', level: 'junior', status: 'active' },
+        { name: 'Eve', level: 'junior', status: 'on_leave' },
       ],
       shiftCycle: {
         morning: 2,
@@ -314,13 +320,13 @@ export function ShiftScheduleForm({
                           <TableCell>
                             <Badge
                               variant={
-                                field.status === 'aktif'
+                                field.status === 'active'
                                   ? 'secondary'
                                   : 'outline'
                               }
                               className="capitalize"
                             >
-                              {field.status}
+                              {statusMap[field.status]}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
@@ -452,9 +458,9 @@ export function ShiftScheduleForm({
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="aktif">Aktif</SelectItem>
-                        <SelectItem value="cuti">Cuti</SelectItem>
-                        <SelectItem value="libur">Libur</SelectItem>
+                        <SelectItem value="active">Aktif</SelectItem>
+                        <SelectItem value="on_leave">Cuti</SelectItem>
+                        <SelectItem value="day_off">Libur</SelectItem>
                       </SelectContent>
                     </Select>
                     {dialogErrors.status && (

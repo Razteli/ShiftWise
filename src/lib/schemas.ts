@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const employeeSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
-  status: z.enum(['aktif', 'cuti', 'libur']),
+  status: z.enum(['active', 'on_leave', 'day_off']),
   level: z.enum(['junior', 'intermediate', 'senior']),
 });
 
