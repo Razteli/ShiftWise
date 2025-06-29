@@ -53,7 +53,7 @@ const prompt = ai.definePrompt({
   Jadwal harus mengikuti siklus shift yang disediakan untuk setiap karyawan yang tersedia. Misalnya, jika siklus melibatkan 2 shift Pagi, seorang karyawan harus bekerja 2 shift Pagi, kemudian melanjutkan ke bagian siklus berikutnya.
   Pastikan jumlah karyawan yang ditugaskan untuk setiap jenis shift pada setiap hari memenuhi persyaratan yang ditentukan dalam 'Karyawan yang Dibutuhkan per Shift'. Misalnya, jika persyaratan untuk 'Pagi' adalah 2, maka tepat dua karyawan harus ditugaskan 'Pagi' untuk hari itu.
   Pertimbangkan senioritas (level) saat menugaskan shift, menyeimbangkan beban kerja di semua kelas karyawan.
-  Karyawan dengan status 'on_leave' atau 'day_off' tidak boleh ditugaskan shift apa pun selama seluruh periode.
+  Karyawan dengan status 'cuti' atau 'libur' tidak boleh ditugaskan shift apa pun selama seluruh periode.
   {{#if customRule}}
   Patuhi semua aturan kustom yang diberikan dengan ketat.
   {{/if}}
