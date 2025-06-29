@@ -35,29 +35,27 @@ const prompt = ai.definePrompt({
   name: 'suggestShiftSchedulePrompt',
   input: {schema: SuggestShiftScheduleInputSchema},
   output: {schema: SuggestShiftScheduleOutputSchema},
-  prompt: `Anda adalah asisten AI yang menyarankan jadwal shift optimal untuk karyawan.
-  
-  Buat jadwal untuk periode dari {{startDate}} hingga {{endDate}}, yang merupakan total {{numberOfDays}} hari.
+  prompt: `Anda adalah asisten AI yang ahli dalam membuat jadwal shift karyawan yang optimal.
+Tugas Anda adalah membuat jadwal shift untuk periode dari {{startDate}} hingga {{endDate}} (total {{numberOfDays}} hari).
 
-  Pertimbangkan input berikut untuk menghasilkan jadwal yang seimbang dan bebas konflik:
+Gunakan informasi berikut untuk membuat jadwal:
+- Karyawan (JSON): {{{employees}}}
+- Persyaratan Karyawan per Shift (JSON): {{{employeesPerShift}}}
+- Pola Siklus Shift yang Diinginkan: {{{shiftCycleDescription}}}
+{{#if customRule}}
+- Aturan Tambahan: {{{customRule}}}
+{{/if}}
 
-  Karyawan (JSON): {{{employees}}}
-  Siklus Shift: {{{shiftCycleDescription}}}
-  Karyawan yang Dibutuhkan per Shift (JSON): {{{employeesPerShift}}}
-  {{#if customRule}}
-  Aturan Kustom: {{{customRule}}}
-  {{/if}}
+Tujuan utama Anda adalah memenuhi **Persyaratan Karyawan per Shift** untuk setiap hari (Pagi, Siang, Malam).
+Gunakan **Pola Siklus Shift** sebagai panduan utama untuk rotasi karyawan, tetapi prioritas utama adalah memenuhi jumlah staf harian.
+Seimbangkan beban kerja antar karyawan, dengan mempertimbangkan level senioritas mereka.
+Karyawan dengan status 'cuti' atau 'libur' TIDAK BOLEH dijadwalkan sama sekali.
 
-  Hasilkan jadwal shift yang mempertimbangkan ketersediaan karyawan, keseimbangan beban kerja, dan persyaratan shift.
-  Jadwal output harus dalam format yang kompatibel dengan CSV, dengan "Karyawan" sebagai header kolom pertama, diikuti oleh kolom tanggal: "Hari 1", "Hari 2", ..., hingga "Hari {{numberOfDays}}".
-  Jadwal harus mengikuti siklus shift yang disediakan untuk setiap karyawan yang tersedia. Misalnya, jika siklus melibatkan 2 shift Pagi, seorang karyawan harus bekerja 2 shift Pagi, kemudian melanjutkan ke bagian siklus berikutnya.
-  Pastikan jumlah karyawan yang ditugaskan untuk setiap jenis shift pada setiap hari memenuhi persyaratan yang ditentukan dalam 'Karyawan yang Dibutuhkan per Shift'. Misalnya, jika persyaratan untuk 'Pagi' adalah 2, maka tepat dua karyawan harus ditugaskan 'Pagi' untuk hari itu.
-  Pertimbangkan senioritas (level) saat menugaskan shift, menyeimbangkan beban kerja di semua kelas karyawan.
-  Karyawan dengan status 'cuti' atau 'libur' tidak boleh ditugaskan shift apa pun selama seluruh periode.
-  {{#if customRule}}
-  Patuhi semua aturan kustom yang diberikan dengan ketat.
-  {{/if}}
-  `,
+Format output HARUS berupa string CSV yang valid.
+- Baris pertama adalah header: "Karyawan", "Hari 1", "Hari 2", ..., "Hari {{numberOfDays}}".
+- Setiap baris berikutnya mewakili satu karyawan.
+- Gunakan nilai shift yang tepat seperti yang dijelaskan dalam siklus: 'Pagi', 'Siang', 'Malam', 'Libur'.
+`,
 });
 
 const suggestShiftScheduleFlow = ai.defineFlow(
