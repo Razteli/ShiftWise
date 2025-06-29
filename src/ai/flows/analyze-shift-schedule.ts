@@ -12,11 +12,28 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AnalyzeShiftScheduleInputSchema = z.object({
-  schedule: z.string().describe('The shift schedule in a CSV-compatible format.'),
-  employees: z.string().describe('A JSON string representing the list of employees, including their name, status, and level.'),
-  shiftCycleDescription: z.string().describe('A description of the shift cycle used in the schedule.'),
-  employeesPerShift: z.string().describe('A JSON string representing the number of employees required for each shift (morning, afternoon, night).'),
-  customRule: z.string().optional().describe('Additional custom rules provided by the user.'),
+  schedule: z
+    .string()
+    .describe('The shift schedule in a CSV-compatible format.'),
+  employees: z
+    .string()
+    .describe(
+      'A JSON string representing the list of employees, including their name, status, and level.'
+    ),
+  shiftCycle: z
+    .string()
+    .describe(
+      'A JSON string representing the shift cycle configuration used in the schedule.'
+    ),
+  employeesPerShift: z
+    .string()
+    .describe(
+      'A JSON string representing the number of employees required for each shift (morning, afternoon, night).'
+    ),
+  customRule: z
+    .string()
+    .optional()
+    .describe('Additional custom rules provided by the user.'),
   scheduleDocument: z
     .string()
     .optional()
@@ -24,15 +41,27 @@ const AnalyzeShiftScheduleInputSchema = z.object({
       "An image of an existing schedule, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
-export type AnalyzeShiftScheduleInput = z.infer<typeof AnalyzeShiftScheduleInputSchema>;
+export type AnalyzeShiftScheduleInput = z.infer<
+  typeof AnalyzeShiftScheduleInputSchema
+>;
 
 const AnalyzeShiftScheduleOutputSchema = z.object({
-  issues: z.array(z.string()).describe('Daftar masalah yang teridentifikasi dalam jadwal shift.'),
-  suggestions: z.array(z.string()).describe('Daftar saran untuk menyelesaikan masalah yang teridentifikasi.'),
+  issues: z
+    .array(z.string())
+    .describe('Daftar masalah yang teridentifikasi dalam jadwal shift.'),
+  suggestions: z
+    .array(z.string())
+    .describe(
+      'Daftar saran untuk menyelesaikan masalah yang teridentifikasi.'
+    ),
 });
-export type AnalyzeShiftScheduleOutput = z.infer<typeof AnalyzeShiftScheduleOutputSchema>;
+export type AnalyzeShiftScheduleOutput = z.infer<
+  typeof AnalyzeShiftScheduleOutputSchema
+>;
 
-export async function analyzeShiftSchedule(input: AnalyzeShiftScheduleInput): Promise<AnalyzeShiftScheduleOutput> {
+export async function analyzeShiftSchedule(
+  input: AnalyzeShiftScheduleInput
+): Promise<AnalyzeShiftScheduleOutput> {
   return analyzeShiftScheduleFlow(input);
 }
 
@@ -44,10 +73,13 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
 
 Jadwal Shift yang Dihasilkan: {{{schedule}}}
 Karyawan (JSON): {{{employees}}}
-Jadwal ini dibuat berdasarkan siklus shift berikut: {{{shiftCycleDescription}}}.
+Konfigurasi Siklus Shift yang Digunakan (JSON): {{{shiftCycle}}}
 Karyawan yang Dibutuhkan per Shift (JSON): {{{employeesPerShift}}}
 
-Analisis Anda harus memeriksa kekurangan atau kelebihan staf pada hari apa pun untuk shift apa pun, berdasarkan jumlah karyawan yang dibutuhkan.
+Analisis Anda harus memeriksa:
+1. Kekurangan atau kelebihan staf pada hari apa pun untuk shift apa pun, berdasarkan jumlah karyawan yang dibutuhkan.
+2. Kepatuhan terhadap pola siklus shift yang diinginkan.
+3. Keseimbangan beban kerja antar karyawan.
 
 {{#if customRule}}
 Pengguna juga memberikan aturan khusus ini yang seharusnya diikuti: {{{customRule}}}
@@ -59,7 +91,7 @@ Pengguna juga telah mengunggah gambar jadwal nyata yang sudah ada untuk konteks 
 Gambar Jadwal yang Diunggah: {{media url=scheduleDocument}}
 {{/if}}
 
-Berdasarkan semua informasi ini, berikan analisis Anda dalam Bahasa Indonesia.`,
+Berdasarkan semua informasi ini, berikan analisis Anda dalam Bahasa Indonesia dalam format JSON yang telah ditentukan.`,
 });
 
 const analyzeShiftScheduleFlow = ai.defineFlow(

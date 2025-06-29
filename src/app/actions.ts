@@ -39,12 +39,7 @@ export async function generateAndAnalyzeSchedule(
 
     const employeesJson = JSON.stringify(config.employees);
     const employeesPerShiftJson = JSON.stringify(config.employeesPerShift);
-
-    const { morning, afternoon, night, off } = config.shiftCycle;
-    const shiftCycleDescription =
-      `${morning} hari shift Pagi, ` +
-      `${afternoon} hari shift Siang, ${night} hari shift Malam, ` +
-      `dan ${off} hari Libur.`;
+    const shiftCycleJson = JSON.stringify(config.shiftCycle);
 
     const numberOfDays = differenceInDays(config.endDate, config.startDate) + 1;
     if (numberOfDays <= 0) {
@@ -53,7 +48,7 @@ export async function generateAndAnalyzeSchedule(
 
     const suggestionInput = {
       employees: employeesJson,
-      shiftCycleDescription: shiftCycleDescription,
+      shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       startDate: config.startDate.toISOString(),
       endDate: config.endDate.toISOString(),
@@ -73,7 +68,7 @@ export async function generateAndAnalyzeSchedule(
     const analysisInput = {
       schedule: suggestionResult.schedule,
       employees: employeesJson,
-      shiftCycleDescription: shiftCycleDescription,
+      shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
       scheduleDocument: config.scheduleDocument,
@@ -103,17 +98,12 @@ export async function reanalyzeSchedule(
   try {
     const employeesJson = JSON.stringify(config.employees);
     const employeesPerShiftJson = JSON.stringify(config.employeesPerShift);
-
-    const { morning, afternoon, night, off } = config.shiftCycle;
-    const shiftCycleDescription =
-      `${morning} hari shift Pagi, ` +
-      `${afternoon} hari shift Siang, ${night} hari shift Malam, ` +
-      `dan ${off} hari Libur.`;
+    const shiftCycleJson = JSON.stringify(config.shiftCycle);
 
     const analysisInput = {
       schedule: schedule,
       employees: employeesJson,
-      shiftCycleDescription: shiftCycleDescription,
+      shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
       scheduleDocument: config.scheduleDocument,
