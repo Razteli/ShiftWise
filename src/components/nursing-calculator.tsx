@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calculator, RotateCcw } from 'lucide-react';
-import { Separator } from './ui/separator';
 
 interface Result {
   total: number;
@@ -57,20 +56,19 @@ const ResultDisplay: FC<{ result: Result | null; unit: string }> = ({
 const DepkesCalculator = () => {
   const [inputs, setInputs] = useState({ minimal: 0, partial: 0, total: 0 });
   const [result, setResult] = useState<Result | null>(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleCalculate = () => {
     const { minimal, partial, total } = inputs;
-    // Constants from Depkes RI guidelines
     const hours = { minimal: 2, partial: 3.7, total: 5.4 };
     const workingHoursPerDay = 7;
-    const offDayCorrection = 0.25; // 25%
+    const offDayCorrection = 0.25;
 
     const totalCareHours =
       minimal * hours.minimal + partial * hours.partial + total * hours.total;
     const baseNurses = totalCareHours / workingHoursPerDay;
     const totalNurses = Math.ceil(baseNurses * (1 + offDayCorrection));
 
-    // Shift distribution ratios
     const distribution = { morning: 0.47, afternoon: 0.36, night: 0.17 };
     setResult({
       total: totalNurses,
@@ -78,12 +76,16 @@ const DepkesCalculator = () => {
       afternoon: Math.ceil(totalNurses * distribution.afternoon),
       night: Math.ceil(totalNurses * distribution.night),
     });
+    setShowAnalysis(true);
   };
 
   const handleReset = () => {
     setInputs({ minimal: 0, partial: 0, total: 0 });
     setResult(null);
+    setShowAnalysis(false);
   };
+  
+  const totalCareHours = inputs.minimal * 2 + inputs.partial * 3.7 + inputs.total * 5.4;
 
   return (
     <Card>
@@ -110,6 +112,23 @@ const DepkesCalculator = () => {
            <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
            <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
         </div>
+        {showAnalysis && result && (
+            <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
+                <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
+                 <p className="text-muted-foreground">
+                   1. Total Jam Perawatan: <br/>
+                   <span className="font-mono text-foreground text-xs block pl-2">({inputs.minimal} * 2) + ({inputs.partial} * 3.7) + ({inputs.total} * 5.4) = <b>{totalCareHours.toFixed(2)} jam</b></span>
+                 </p>
+                 <p className="text-muted-foreground">
+                   2. Kebutuhan Dasar Perawat: <br/>
+                   <span className="font-mono text-foreground text-xs block pl-2">{totalCareHours.toFixed(2)} / 7 jam = <b>{(totalCareHours / 7).toFixed(2)} perawat</b></span>
+                 </p>
+                 <p className="text-muted-foreground">
+                   3. Total (dgn koreksi libur 25%): <br/>
+                   <span className="font-mono text-foreground text-xs block pl-2">{(totalCareHours / 7).toFixed(2)} * 1.25 = {((totalCareHours / 7) * 1.25).toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
+                 </p>
+            </div>
+        )}
       </CardContent>
       <CardFooter>
         <ResultDisplay result={result} unit="Perawat" />
@@ -121,17 +140,16 @@ const DepkesCalculator = () => {
 const DouglasCalculator = () => {
     const [inputs, setInputs] = useState({ minimal: 0, partial: 0, total: 0 });
     const [result, setResult] = useState<Result | null>(null);
+    const [showAnalysis, setShowAnalysis] = useState(false);
 
     const handleCalculate = () => {
         const { minimal, partial, total } = inputs;
-        // Constants based on Douglas studies
         const hours = { minimal: 2, partial: 3.5, total: 5.5 }; 
         const workingHoursPerDay = 8;
 
         const totalCareHours = minimal * hours.minimal + partial * hours.partial + total * hours.total;
         const totalNurses = Math.ceil(totalCareHours / workingHoursPerDay);
 
-        // Common shift distribution
         const distribution = { morning: 0.45, afternoon: 0.35, night: 0.20 };
         setResult({
             total: totalNurses,
@@ -139,12 +157,16 @@ const DouglasCalculator = () => {
             afternoon: Math.ceil(totalNurses * distribution.afternoon),
             night: Math.ceil(totalNurses * distribution.night),
         });
+        setShowAnalysis(true);
     };
 
     const handleReset = () => {
         setInputs({ minimal: 0, partial: 0, total: 0 });
         setResult(null);
+        setShowAnalysis(false);
     };
+
+    const totalCareHours = inputs.minimal * 2 + inputs.partial * 3.5 + inputs.total * 5.5;
 
     return (
         <Card>
@@ -169,6 +191,19 @@ const DouglasCalculator = () => {
                     <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
                     <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
                 </div>
+                {showAnalysis && result && (
+                    <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
+                        <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
+                         <p className="text-muted-foreground">
+                           1. Total Jam Perawatan: <br/>
+                           <span className="font-mono text-foreground text-xs block pl-2">({inputs.minimal} * 2) + ({inputs.partial} * 3.5) + ({inputs.total} * 5.5) = <b>{totalCareHours.toFixed(2)} jam</b></span>
+                         </p>
+                         <p className="text-muted-foreground">
+                           2. Kebutuhan Perawat: <br/>
+                           <span className="font-mono text-foreground text-xs block pl-2">{totalCareHours.toFixed(2)} / 8 jam = {(totalCareHours / 8).toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
+                         </p>
+                    </div>
+                )}
             </CardContent>
             <CardFooter>
                 <ResultDisplay result={result} unit="Perawat" />
@@ -186,6 +221,7 @@ const GilliesCalculator = () => {
         correction: 25,
     });
     const [result, setResult] = useState<Result | null>(null);
+    const [showAnalysis, setShowAnalysis] = useState(false);
 
     const handleCalculate = () => {
         const { avgCareHours, avgPatients, offDays, workHours, correction } = inputs;
@@ -198,6 +234,7 @@ const GilliesCalculator = () => {
 
         if ((C - D) * E === 0) {
             setResult({ total: 0 });
+            setShowAnalysis(true);
             return;
         }
 
@@ -206,12 +243,18 @@ const GilliesCalculator = () => {
         const totalNurses = Math.ceil(baseNurses + correctionValue);
 
         setResult({ total: totalNurses });
+        setShowAnalysis(true);
     };
 
      const handleReset = () => {
         setInputs({ avgCareHours: 4, avgPatients: 20, offDays: 86, workHours: 7, correction: 25 });
         setResult(null);
+        setShowAnalysis(false);
     };
+
+    const { avgCareHours, avgPatients, offDays, workHours, correction } = inputs;
+    const baseNurses = ((avgCareHours * avgPatients * 365) / ((365 - offDays) * workHours));
+    const correctionValue = baseNurses * (correction / 100);
 
     return (
         <Card>
@@ -246,6 +289,23 @@ const GilliesCalculator = () => {
                     <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
                     <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
                 </div>
+                 {showAnalysis && result && (
+                    <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
+                        <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
+                        <p className="text-muted-foreground">
+                            1. Kebutuhan Dasar Perawat: <br/>
+                            <span className="font-mono text-foreground text-xs block pl-2">({avgCareHours} * {avgPatients} * 365) / ((365 - {offDays}) * {workHours}) = <b>{baseNurses.toFixed(2)} perawat</b></span>
+                        </p>
+                        <p className="text-muted-foreground">
+                           2. Nilai Koreksi ({correction}%): <br/>
+                           <span className="font-mono text-foreground text-xs block pl-2">{baseNurses.toFixed(2)} * {correction / 100} = <b>{correctionValue.toFixed(2)} perawat</b></span>
+                        </p>
+                        <p className="text-muted-foreground">
+                            3. Total Kebutuhan: <br/>
+                            <span className="font-mono text-foreground text-xs block pl-2">{baseNurses.toFixed(2)} + {correctionValue.toFixed(2)} = {(baseNurses + correctionValue).toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
+                        </p>
+                    </div>
+                 )}
             </CardContent>
             <CardFooter>
                  <ResultDisplay result={result} unit="Perawat" />
@@ -264,6 +324,7 @@ const OperatingRoomCalculator = () => {
     numberOfRooms: 1,
   });
   const [result, setResult] = useState<Result | null>(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleCalculate = () => {
     const {
@@ -277,6 +338,7 @@ const OperatingRoomCalculator = () => {
 
     if (workHours <= 0) {
       setResult({ total: 0 });
+      setShowAnalysis(true);
       return;
     }
 
@@ -285,6 +347,7 @@ const OperatingRoomCalculator = () => {
     const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
 
     setResult({ total: Math.ceil(totalNursesWithCorrection) });
+    setShowAnalysis(true);
   };
 
   const handleReset = () => {
@@ -297,7 +360,21 @@ const OperatingRoomCalculator = () => {
       numberOfRooms: 1,
     });
     setResult(null);
+    setShowAnalysis(false);
   };
+  
+  const {
+      avgOperations,
+      avgOperationDuration,
+      workHours,
+      nursesPerTeam,
+      correction,
+      numberOfRooms,
+  } = inputs;
+  const totalOperationHours = avgOperations * avgOperationDuration * numberOfRooms;
+  const baseNurses = (totalOperationHours / workHours) * nursesPerTeam;
+  const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
+
 
   return (
     <Card>
@@ -395,6 +472,23 @@ const OperatingRoomCalculator = () => {
             Reset
           </Button>
         </div>
+         {showAnalysis && result && (
+            <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
+                <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
+                <p className="text-muted-foreground">
+                    1. Total Jam Operasi: <br/>
+                    <span className="font-mono text-foreground text-xs block pl-2">{avgOperations} ops * {avgOperationDuration} jam * {numberOfRooms} kamar = <b>{totalOperationHours.toFixed(2)} jam</b></span>
+                </p>
+                <p className="text-muted-foreground">
+                    2. Kebutuhan Dasar Perawat: <br/>
+                    <span className="font-mono text-foreground text-xs block pl-2">({totalOperationHours.toFixed(2)} jam / {workHours} jam kerja) * {nursesPerTeam} perawat/tim = <b>{baseNurses.toFixed(2)} perawat</b></span>
+                </p>
+                <p className="text-muted-foreground">
+                    3. Total (dgn koreksi {correction}%): <br/>
+                    <span className="font-mono text-foreground text-xs block pl-2">{baseNurses.toFixed(2)} * (1 + {correction / 100}) = {totalNursesWithCorrection.toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
+                </p>
+            </div>
+         )}
       </CardContent>
       <CardFooter>
         <ResultDisplay result={result} unit="Perawat" />
