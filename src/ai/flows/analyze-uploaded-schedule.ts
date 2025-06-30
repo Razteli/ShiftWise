@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for analyzing an uploaded shift schedule image.
+ * @fileOverview This file defines a Genkit flow for analyzing an uploaded shift schedule document.
  *
  * - analyzeUploadedSchedule - A function that analyzes the uploaded shift schedule and returns potential issues.
  * - AnalyzeUploadedScheduleInput - The input type for the analyzeUploadedSchedule function.
@@ -13,13 +13,24 @@ import { z } from 'genkit';
 import type { AnalyzeShiftScheduleOutput } from './analyze-shift-schedule';
 import { AnalyzeShiftScheduleOutputSchema } from '@/ai/schemas';
 
-const AnalyzeUploadedScheduleInputSchema = z.object({
-  scheduleDocument: z
-    .string()
-    .describe(
-      "An image of an existing schedule, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
+const AnalyzeUploadedScheduleInputSchema = z
+  .object({
+    scheduleDocument: z
+      .string()
+      .optional()
+      .describe(
+        "An image of an existing schedule, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      ),
+    scheduleText: z
+      .string()
+      .optional()
+      .describe(
+        'The text content of an existing schedule, extracted from a document like .docx or .xlsx (as CSV).'
+      ),
+  })
+  .refine(data => data.scheduleDocument || data.scheduleText, {
+    message: 'Either scheduleDocument or scheduleText must be provided.',
+  });
 export type AnalyzeUploadedScheduleInput = z.infer<
   typeof AnalyzeUploadedScheduleInputSchema
 >;
@@ -34,9 +45,14 @@ const analyzeUploadedSchedulePrompt = ai.definePrompt({
   name: 'analyzeUploadedSchedulePrompt',
   input: { schema: AnalyzeUploadedScheduleInputSchema },
   output: { schema: AnalyzeShiftScheduleOutputSchema },
-  prompt: `Anda adalah AI analis jadwal shift yang sangat ahli. Tugas Anda adalah menganalisis secara komprehensif jadwal shift yang ada dalam gambar yang diunggah. Anda harus menyimpulkan semua informasi yang diperlukan langsung dari gambar.
+  prompt: `Anda adalah AI analis jadwal shift yang sangat ahli. Tugas Anda adalah menganalisis secara komprehensif jadwal shift yang ada dari sumber yang diberikan. Anda harus menyimpulkan semua informasi yang diperlukan langsung dari konten.
 
-GAMBAR JADWAL: {{media url=scheduleDocument}}
+{{#if scheduleDocument}}
+SUMBER JADWAL (GAMBAR): {{media url=scheduleDocument}}
+{{else}}
+SUMBER JADWAL (TEKS):
+{{{scheduleText}}}
+{{/if}}
 
 TUGAS ANDA:
 1.  **Ekstrak dan Simpulkan**:

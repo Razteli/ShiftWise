@@ -5,7 +5,10 @@ import {
   analyzeShiftSchedule,
   type AnalyzeShiftScheduleOutput,
 } from '@/ai/flows/analyze-shift-schedule';
-import { analyzeUploadedSchedule as analyzeUploadedScheduleFlow } from '@/ai/flows/analyze-uploaded-schedule';
+import {
+  analyzeUploadedSchedule as analyzeUploadedScheduleFlow,
+  type AnalyzeUploadedScheduleInput,
+} from '@/ai/flows/analyze-uploaded-schedule';
 import type { ScheduleConfig } from '@/lib/schemas';
 import { differenceInDays } from 'date-fns';
 
@@ -125,22 +128,18 @@ export async function reanalyzeSchedule(
   }
 }
 
-export async function analyzeUploadedSchedule(formData: {
-  scheduleDocument: string;
-}): Promise<{ data: AnalyzeShiftScheduleOutput | null; error: string | null }> {
+export async function analyzeUploadedSchedule(
+  formData: AnalyzeUploadedScheduleInput
+): Promise<{ data: AnalyzeShiftScheduleOutput | null; error: string | null }> {
   try {
-    if (!formData.scheduleDocument) {
+    if (!formData.scheduleDocument && !formData.scheduleText) {
       return {
         data: null,
-        error: 'Silakan unggah gambar jadwal terlebih dahulu.',
+        error: 'Silakan unggah file jadwal terlebih dahulu.',
       };
     }
 
-    const analysisInput = {
-      scheduleDocument: formData.scheduleDocument,
-    };
-
-    const analysisResult = await analyzeUploadedScheduleFlow(analysisInput);
+    const analysisResult = await analyzeUploadedScheduleFlow(formData);
 
     return {
       data: analysisResult,

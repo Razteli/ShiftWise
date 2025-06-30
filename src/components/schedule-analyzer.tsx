@@ -34,11 +34,16 @@ import {
 } from '@/app/actions';
 import { Separator } from './ui/separator';
 
-const analyzerSchema = z.object({
-  scheduleDocument: z
-    .string()
-    .min(1, 'Silakan unggah gambar jadwal.'),
-});
+const analyzerSchema = z
+  .object({
+    scheduleDocument: z.string().optional(),
+    scheduleText: z.string().optional(),
+  })
+  .refine(data => data.scheduleDocument || data.scheduleText, {
+    message: 'Silakan unggah file jadwal yang didukung.',
+    path: ['scheduleDocument'], // Attach error to the file input field
+  });
+
 type AnalyzerFormValues = z.infer<typeof analyzerSchema>;
 
 export function ScheduleAnalyzer() {
@@ -46,28 +51,83 @@ export function ScheduleAnalyzer() {
   const { toast } = useToast();
   const [analysisResult, setAnalysisResult] =
     useState<AnalyzeShiftScheduleOutput | null>(null);
+  const [isProcessingFile, setProcessingFile] = useState(false);
 
   const form = useForm<AnalyzerFormValues>({
     resolver: zodResolver(analyzerSchema),
     defaultValues: {
       scheduleDocument: '',
+      scheduleText: '',
     },
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        form.setValue('scheduleDocument', reader.result as string, {
-          shouldValidate: true,
-        });
+    if (!file) return;
+
+    setProcessingFile(true);
+    // Reset fields before processing new file
+    form.reset({ scheduleDocument: '', scheduleText: '' });
+    
+    const fileName = file.name.toLowerCase();
+    const fileType = file.type;
+
+    try {
+      if (fileType.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          form.setValue('scheduleDocument', reader.result as string, {
+            shouldValidate: true,
+          });
+          toast({
+            title: 'File Siap',
+            description: `"${file.name}" telah dipilih.`,
+          });
+          setProcessingFile(false);
+        };
+        reader.readAsDataURL(file);
+        return; // Important to return here as reading is async
+      } 
+      
+      if (fileName.endsWith('.docx')) {
+        const mammoth = await import('mammoth');
+        const arrayBuffer = await file.arrayBuffer();
+        const { value } = await mammoth.extractRawText({ arrayBuffer });
+        form.setValue('scheduleText', value, { shouldValidate: true });
+      } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        const xlsx = await import('xlsx');
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = xlsx.read(arrayBuffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const csvText = xlsx.utils.sheet_to_csv(worksheet);
+        form.setValue('scheduleText', csvText, { shouldValidate: true });
+      } else {
         toast({
-          title: 'File Diunggah',
-          description: `"${file.name}" telah dipilih untuk dianalisis.`,
+          title: 'Tipe File Tidak Didukung',
+          description: 'Silakan unggah file gambar, Word (.docx), atau Excel (.xlsx).',
+          variant: 'destructive',
         });
-      };
-      reader.readAsDataURL(file);
+        form.reset(); // Clear invalid selection
+        setProcessingFile(false);
+        return;
+      }
+
+      toast({
+        title: 'File Siap',
+        description: `"${file.name}" telah diproses dan siap untuk dianalisis.`,
+      });
+
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast({
+        title: 'Gagal Memproses File',
+        description: 'Terjadi kesalahan saat membaca file. Silakan coba lagi.',
+        variant: 'destructive',
+      });
+      form.reset();
+    } finally {
+       setProcessingFile(false);
     }
   };
 
@@ -87,6 +147,8 @@ export function ScheduleAnalyzer() {
     });
   };
 
+  const isSubmitDisabled = isAnalyzing || isProcessingFile;
+
   return (
     <div>
       <div className="text-center mb-10">
@@ -94,7 +156,7 @@ export function ScheduleAnalyzer() {
           Analisis Jadwal yang Ada
         </h2>
         <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-          Unggah gambar jadwal Anda saat ini dan biarkan AI kami memberikan wawasan dan saran.
+          Unggah gambar, dokumen Word, atau file Excel jadwal Anda dan biarkan AI kami memberikan wawasan.
         </p>
       </div>
 
@@ -106,23 +168,23 @@ export function ScheduleAnalyzer() {
                 <CardHeader>
                   <CardTitle>1. Unggah Jadwal</CardTitle>
                   <CardDescription>
-                    Pilih file gambar jadwal yang akan dianalisis.
+                    Pilih file gambar, Word, atau Excel yang akan dianalisis.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <FormField
                     control={form.control}
-                    name="scheduleDocument"
+                    name="scheduleDocument" // Keep this name to show validation error here
                     render={() => (
                       <FormItem>
-                        <FormLabel>File Gambar Jadwal</FormLabel>
+                        <FormLabel>File Jadwal</FormLabel>
                         <FormControl>
                           <Input
                             type="file"
-                            accept="image/*"
+                            accept="image/*,.docx,.xlsx,.xls,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword"
                             onChange={handleFileChange}
                             className="file:text-primary file:font-semibold"
-                            required
+                            disabled={isProcessingFile}
                           />
                         </FormControl>
                         <FormMessage />
@@ -132,13 +194,13 @@ export function ScheduleAnalyzer() {
                 </CardContent>
               </Card>
 
-              <Button type="submit" className="w-full" disabled={isAnalyzing}>
-                {isAnalyzing ? (
+              <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
+                {isAnalyzing || isProcessingFile ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Bot className="mr-2 h-4 w-4" />
                 )}
-                Analisis Jadwal dengan AI
+                {isProcessingFile ? 'Memproses File...' : 'Analisis Jadwal dengan AI'}
               </Button>
             </form>
           </Form>
@@ -153,10 +215,10 @@ export function ScheduleAnalyzer() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 min-h-[400px]">
-              {isAnalyzing ? (
+              {isAnalyzing || isProcessingFile ? (
                 <div className="flex items-center justify-center text-muted-foreground h-full min-h-[300px]">
                   <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-                  <p>Menganalisis jadwal Anda...</p>
+                  <p>{isAnalyzing ? 'Menganalisis jadwal Anda...' : 'Memproses file...'}</p>
                 </div>
               ) : analysisResult ? (
                 <>
