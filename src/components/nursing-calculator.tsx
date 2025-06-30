@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calculator, RotateCcw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Result {
   total: number;
@@ -54,20 +55,42 @@ const ResultDisplay: FC<{ result: Result | null; unit: string }> = ({
 };
 
 const DepkesCalculator = () => {
-  const [inputs, setInputs] = useState({ minimal: 0, partial: 0, total: 0 });
+  const { toast } = useToast();
+  const [inputs, setInputs] = useState({
+    minimal: 0,
+    partial: 0,
+    total: 0,
+    offDays: 86,
+  });
   const [result, setResult] = useState<Result | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleCalculate = () => {
-    const { minimal, partial, total } = inputs;
+    const { minimal, partial, total, offDays } = inputs;
     const hours = { minimal: 2, partial: 3.7, total: 5.4 };
     const workingHoursPerDay = 7;
-    const offDayCorrection = 0.25;
+    const totalDaysInYear = 365;
+    const workingDaysInYear = totalDaysInYear - offDays;
+
+    if (workingDaysInYear <= 0) {
+      toast({
+        title: 'Input Tidak Valid',
+        description: 'Jumlah hari libur tidak boleh 365 atau lebih.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const totalCareHours =
       minimal * hours.minimal + partial * hours.partial + total * hours.total;
+
     const baseNurses = totalCareHours / workingHoursPerDay;
-    const totalNurses = Math.ceil(baseNurses * (1 + offDayCorrection));
+
+    const lossDayCorrectionFactor = totalDaysInYear / workingDaysInYear;
+
+    const totalNursesWithCorrection = baseNurses * lossDayCorrectionFactor;
+
+    const totalNurses = Math.ceil(totalNursesWithCorrection);
 
     const distribution = { morning: 0.47, afternoon: 0.36, night: 0.17 };
     setResult({
@@ -80,12 +103,18 @@ const DepkesCalculator = () => {
   };
 
   const handleReset = () => {
-    setInputs({ minimal: 0, partial: 0, total: 0 });
+    setInputs({ minimal: 0, partial: 0, total: 0, offDays: 86 });
     setResult(null);
     setShowAnalysis(false);
   };
-  
-  const totalCareHours = inputs.minimal * 2 + inputs.partial * 3.7 + inputs.total * 5.4;
+
+  const totalCareHours =
+    inputs.minimal * 2 + inputs.partial * 3.7 + inputs.total * 5.4;
+  const baseNurses = totalCareHours / 7;
+  const workingDaysInYear = 365 - inputs.offDays;
+  const lossDayCorrectionFactor =
+    workingDaysInYear > 0 ? 365 / workingDaysInYear : 0;
+  const totalWithCorrection = baseNurses * lossDayCorrectionFactor;
 
   return (
     <Card>
@@ -108,11 +137,18 @@ const DepkesCalculator = () => {
           <Label htmlFor="depkes-total">Pasien Askep Total</Label>
           <Input id="depkes-total" type="number" value={inputs.total} onChange={e => setInputs(i => ({ ...i, total: Number(e.target.value) }))} />
         </div>
+        <div>
+          <Label htmlFor="depkes-off-days">Jumlah Hari Libur/Cuti per Tahun</Label>
+          <Input id="depkes-off-days" type="number" value={inputs.offDays} onChange={e => setInputs(i => ({ ...i, offDays: Number(e.target.value) }))} />
+          <p className="text-xs text-muted-foreground pt-1">
+            Total hari non-kerja perawat (Contoh: 128 hari = 52x2 akhir pekan + 12 cuti + 12 hari libur nasional).
+          </p>
+        </div>
         <div className="flex gap-2 pt-2">
            <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
            <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
         </div>
-        {showAnalysis && result && (
+        {showAnalysis && result && workingDaysInYear > 0 && (
             <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
                 <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
                  <p className="text-muted-foreground">
@@ -121,11 +157,15 @@ const DepkesCalculator = () => {
                  </p>
                  <p className="text-muted-foreground">
                    2. Kebutuhan Dasar Perawat: <br/>
-                   <span className="font-mono text-foreground text-xs block pl-2">{totalCareHours.toFixed(2)} / 7 jam = <b>{(totalCareHours / 7).toFixed(2)} perawat</b></span>
+                   <span className="font-mono text-foreground text-xs block pl-2">{totalCareHours.toFixed(2)} / 7 jam = <b>{baseNurses.toFixed(2)} perawat</b></span>
+                 </p>
+                  <p className="text-muted-foreground">
+                   3. Faktor Koreksi "Loss Day": <br/>
+                   <span className="font-mono text-foreground text-xs block pl-2">365 / (365 - {inputs.offDays}) = <b>{lossDayCorrectionFactor.toFixed(2)}</b></span>
                  </p>
                  <p className="text-muted-foreground">
-                   3. Total (dgn koreksi libur 25%): <br/>
-                   <span className="font-mono text-foreground text-xs block pl-2">{(totalCareHours / 7).toFixed(2)} * 1.25 = {((totalCareHours / 7) * 1.25).toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
+                   4. Total Kebutuhan (dgn koreksi): <br/>
+                   <span className="font-mono text-foreground text-xs block pl-2">{baseNurses.toFixed(2)} * {lossDayCorrectionFactor.toFixed(2)} = {totalWithCorrection.toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
                  </p>
             </div>
         )}
@@ -315,11 +355,18 @@ const GilliesCalculator = () => {
 };
 
 const OperatingRoomCalculator = () => {
+  const { toast } = useToast();
   const [inputs, setInputs] = useState({
-    avgOperations: 10,
-    avgOperationDuration: 2.5,
+    largeOpsCount: 2,
+    largeOpsHours: 5,
+    largeOpsNurses: 4,
+    mediumOpsCount: 4,
+    mediumOpsHours: 2.5,
+    mediumOpsNurses: 3,
+    smallOpsCount: 4,
+    smallOpsHours: 1,
+    smallOpsNurses: 2,
     workHours: 7,
-    nursesPerTeam: 2,
     correction: 25,
     numberOfRooms: 1,
   });
@@ -328,22 +375,28 @@ const OperatingRoomCalculator = () => {
 
   const handleCalculate = () => {
     const {
-      avgOperations,
-      avgOperationDuration,
-      workHours,
-      nursesPerTeam,
-      correction,
-      numberOfRooms,
+      largeOpsCount, largeOpsHours, largeOpsNurses,
+      mediumOpsCount, mediumOpsHours, mediumOpsNurses,
+      smallOpsCount, smallOpsHours, smallOpsNurses,
+      workHours, correction, numberOfRooms
     } = inputs;
 
     if (workHours <= 0) {
-      setResult({ total: 0 });
-      setShowAnalysis(true);
+       toast({
+        title: 'Input Tidak Valid',
+        description: 'Jam kerja efektif harus lebih dari 0.',
+        variant: 'destructive',
+      });
       return;
     }
 
-    const totalOperationHours = avgOperations * avgOperationDuration * numberOfRooms;
-    const baseNurses = (totalOperationHours / workHours) * nursesPerTeam;
+    const totalLargeOpsHours = largeOpsCount * largeOpsHours * largeOpsNurses;
+    const totalMediumOpsHours = mediumOpsCount * mediumOpsHours * mediumOpsNurses;
+    const totalSmallOpsHours = smallOpsCount * smallOpsHours * smallOpsNurses;
+
+    const totalNurseHours = (totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours) * numberOfRooms;
+
+    const baseNurses = totalNurseHours / workHours;
     const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
 
     setResult({ total: Math.ceil(totalNursesWithCorrection) });
@@ -352,116 +405,80 @@ const OperatingRoomCalculator = () => {
 
   const handleReset = () => {
     setInputs({
-      avgOperations: 10,
-      avgOperationDuration: 2.5,
-      workHours: 7,
-      nursesPerTeam: 2,
-      correction: 25,
-      numberOfRooms: 1,
+      largeOpsCount: 2, largeOpsHours: 5, largeOpsNurses: 4,
+      mediumOpsCount: 4, mediumOpsHours: 2.5, mediumOpsNurses: 3,
+      smallOpsCount: 4, smallOpsHours: 1, smallOpsNurses: 2,
+      workHours: 7, correction: 25, numberOfRooms: 1,
     });
     setResult(null);
     setShowAnalysis(false);
   };
-  
-  const {
-      avgOperations,
-      avgOperationDuration,
-      workHours,
-      nursesPerTeam,
-      correction,
-      numberOfRooms,
-  } = inputs;
-  const totalOperationHours = avgOperations * avgOperationDuration * numberOfRooms;
-  const baseNurses = (totalOperationHours / workHours) * nursesPerTeam;
-  const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
 
+  const {
+      largeOpsCount, largeOpsHours, largeOpsNurses,
+      mediumOpsCount, mediumOpsHours, mediumOpsNurses,
+      smallOpsCount, smallOpsHours, smallOpsNurses,
+      workHours, correction, numberOfRooms
+  } = inputs;
+  
+  const totalLargeOpsHours = largeOpsCount * largeOpsHours * largeOpsNurses;
+  const totalMediumOpsHours = mediumOpsCount * mediumOpsHours * mediumOpsNurses;
+  const totalSmallOpsHours = smallOpsCount * smallOpsHours * smallOpsNurses;
+  const totalNurseHours = (totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours) * numberOfRooms;
+  const baseNurses = totalNurseHours / workHours;
+  const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Metode Kamar Operasi (Koreksi)</CardTitle>
+        <CardTitle>Metode Kamar Operasi (Detail)</CardTitle>
         <CardDescription>
-          Berdasarkan jumlah operasi dengan tambahan faktor koreksi.
+          Berdasarkan jenis operasi, durasi, dan jumlah tim perawat.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="op-avg-ops">
-              Rata-rata jumlah operasi/kamar/hari
-            </Label>
-            <Input
-              id="op-avg-ops"
-              type="number"
-              value={inputs.avgOperations}
-              onChange={(e) =>
-                setInputs((i) => ({ ...i, avgOperations: Number(e.target.value) }))
-              }
-            />
+      <CardContent className="space-y-6">
+        {/* Operation Types */}
+        <div className="space-y-4 rounded-md border p-4">
+          <h4 className="font-semibold text-sm text-primary">Operasi Besar</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div><Label>Jumlah/hari</Label><Input type="number" value={inputs.largeOpsCount} onChange={e => setInputs(i => ({...i, largeOpsCount: Number(e.target.value)}))} /></div>
+            <div><Label>Lama (jam)</Label><Input type="number" value={inputs.largeOpsHours} onChange={e => setInputs(i => ({...i, largeOpsHours: Number(e.target.value)}))} /></div>
+            <div><Label>Jml Perawat</Label><Input type="number" value={inputs.largeOpsNurses} onChange={e => setInputs(i => ({...i, largeOpsNurses: Number(e.target.value)}))} /></div>
           </div>
-          <div>
-            <Label htmlFor="op-avg-duration">
-              Rata-rata lama operasi (jam)
-            </Label>
-            <Input
-              id="op-avg-duration"
-              type="number"
-              value={inputs.avgOperationDuration}
-              onChange={(e) =>
-                setInputs((i) => ({ ...i, avgOperationDuration: Number(e.target.value) }))
-              }
-            />
-          </div>
-          <div>
+        </div>
+        <div className="space-y-4 rounded-md border p-4">
+           <h4 className="font-semibold text-sm text-primary">Operasi Sedang</h4>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+             <div><Label>Jumlah/hari</Label><Input type="number" value={inputs.mediumOpsCount} onChange={e => setInputs(i => ({...i, mediumOpsCount: Number(e.target.value)}))} /></div>
+             <div><Label>Lama (jam)</Label><Input type="number" value={inputs.mediumOpsHours} onChange={e => setInputs(i => ({...i, mediumOpsHours: Number(e.target.value)}))} /></div>
+             <div><Label>Jml Perawat</Label><Input type="number" value={inputs.mediumOpsNurses} onChange={e => setInputs(i => ({...i, mediumOpsNurses: Number(e.target.value)}))} /></div>
+           </div>
+        </div>
+        <div className="space-y-4 rounded-md border p-4">
+            <h4 className="font-semibold text-sm text-primary">Operasi Kecil</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+             <div><Label>Jumlah/hari</Label><Input type="number" value={inputs.smallOpsCount} onChange={e => setInputs(i => ({...i, smallOpsCount: Number(e.target.value)}))} /></div>
+             <div><Label>Lama (jam)</Label><Input type="number" value={inputs.smallOpsHours} onChange={e => setInputs(i => ({...i, smallOpsHours: Number(e.target.value)}))} /></div>
+             <div><Label>Jml Perawat</Label><Input type="number" value={inputs.smallOpsNurses} onChange={e => setInputs(i => ({...i, smallOpsNurses: Number(e.target.value)}))} /></div>
+           </div>
+        </div>
+        
+        {/* Other Inputs */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+           <div>
             <Label htmlFor="op-work-hours">Jam kerja efektif/hari</Label>
-            <Input
-              id="op-work-hours"
-              type="number"
-              value={inputs.workHours}
-              onChange={(e) =>
-                setInputs((i) => ({ ...i, workHours: Number(e.target.value) }))
-              }
-            />
-          </div>
-          <div>
-            <Label htmlFor="op-nurses-team">
-              Jumlah perawat per tim operasi
-            </Label>
-            <Input
-              id="op-nurses-team"
-              type="number"
-              value={inputs.nursesPerTeam}
-              onChange={(e) =>
-                setInputs((i) => ({ ...i, nursesPerTeam: Number(e.target.value) }))
-              }
-            />
+            <Input id="op-work-hours" type="number" value={inputs.workHours} onChange={e => setInputs(i => ({ ...i, workHours: Number(e.target.value) }))} />
           </div>
           <div>
             <Label htmlFor="op-rooms">Jumlah kamar operasi</Label>
-            <Input
-              id="op-rooms"
-              type="number"
-              value={inputs.numberOfRooms}
-              onChange={(e) =>
-                setInputs((i) => ({ ...i, numberOfRooms: Number(e.target.value) }))
-              }
-            />
+            <Input id="op-rooms" type="number" value={inputs.numberOfRooms} onChange={e => setInputs(i => ({ ...i, numberOfRooms: Number(e.target.value) }))} />
+          </div>
+          <div>
+            <Label htmlFor="op-correction">Faktor Koreksi (%)</Label>
+            <Input id="op-correction" type="number" value={inputs.correction} onChange={e => setInputs(i => ({ ...i, correction: Number(e.target.value) }))} />
           </div>
         </div>
-        <div>
-          <Label htmlFor="op-correction">Faktor Koreksi (%)</Label>
-          <Input
-            id="op-correction"
-            type="number"
-            value={inputs.correction}
-            onChange={(e) =>
-              setInputs((i) => ({ ...i, correction: Number(e.target.value) }))
-            }
-          />
-           <p className="text-xs text-muted-foreground pt-1">
-              Tambahan untuk tugas non-keperawatan, cuti, dll. (mis. 25%)
-          </p>
-        </div>
+         
         <div className="flex gap-2 pt-2">
           <Button onClick={handleCalculate} className="w-full">
             <Calculator />
@@ -472,16 +489,21 @@ const OperatingRoomCalculator = () => {
             Reset
           </Button>
         </div>
-         {showAnalysis && result && (
+         {showAnalysis && result && workHours > 0 && (
             <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
                 <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
                 <p className="text-muted-foreground">
-                    1. Total Jam Operasi: <br/>
-                    <span className="font-mono text-foreground text-xs block pl-2">{avgOperations} ops * {avgOperationDuration} jam * {numberOfRooms} kamar = <b>{totalOperationHours.toFixed(2)} jam</b></span>
+                    1. Total Jam-Perawat/hari: <br/>
+                    <span className="font-mono text-foreground text-xs block pl-2">
+                        Besar: ({largeOpsCount}*{largeOpsHours}*{largeOpsNurses}) = {totalLargeOpsHours.toFixed(1)} <br/>
+                        Sedang: ({mediumOpsCount}*{mediumOpsHours}*{mediumOpsNurses}) = {totalMediumOpsHours.toFixed(1)} <br/>
+                        Kecil: ({smallOpsCount}*{smallOpsHours}*{smallOpsNurses}) = {totalSmallOpsHours.toFixed(1)} <br/>
+                        Subtotal * {numberOfRooms} Kamar = <b>{totalNurseHours.toFixed(1)} jam-perawat</b>
+                    </span>
                 </p>
                 <p className="text-muted-foreground">
                     2. Kebutuhan Dasar Perawat: <br/>
-                    <span className="font-mono text-foreground text-xs block pl-2">({totalOperationHours.toFixed(2)} jam / {workHours} jam kerja) * {nursesPerTeam} perawat/tim = <b>{baseNurses.toFixed(2)} perawat</b></span>
+                    <span className="font-mono text-foreground text-xs block pl-2">{totalNurseHours.toFixed(1)} jam-perawat / {workHours} jam kerja = <b>{baseNurses.toFixed(2)} perawat</b></span>
                 </p>
                 <p className="text-muted-foreground">
                     3. Total (dgn koreksi {correction}%): <br/>
