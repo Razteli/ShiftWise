@@ -9,6 +9,7 @@ import { Github } from 'lucide-react';
 import type { ScheduleConfig } from '@/lib/schemas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NursingCalculator } from '@/components/nursing-calculator';
+import { ScheduleAnalyzer } from '@/components/schedule-analyzer';
 
 export default function Home() {
   const [scheduleData, setScheduleData] = useState<{
@@ -45,11 +46,10 @@ export default function Home() {
 
       <main className="container mx-auto p-4 md:p-8 flex-grow">
         <Tabs defaultValue="scheduler" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8 max-w-lg mx-auto">
+          <TabsList className="grid w-full grid-cols-3 mb-8 max-w-2xl mx-auto">
             <TabsTrigger value="scheduler">AI Shift Scheduler</TabsTrigger>
-            <TabsTrigger value="calculator">
-              Kalkulator Kebutuhan Perawat
-            </TabsTrigger>
+            <TabsTrigger value="analyzer">Analisis Jadwal</TabsTrigger>
+            <TabsTrigger value="calculator">Kalkulator Perawat</TabsTrigger>
           </TabsList>
           <TabsContent value="scheduler">
             <div className="text-center mb-10">
@@ -75,6 +75,9 @@ export default function Home() {
                 />
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="analyzer">
+            <ScheduleAnalyzer />
           </TabsContent>
           <TabsContent value="calculator">
             <NursingCalculator />

@@ -82,7 +82,7 @@ const defaultEmployee: Employee = {
   status: 'active',
 };
 
-const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v1';
+const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v2';
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
@@ -248,21 +248,6 @@ export function ShiftScheduleForm({
       append(result.data);
     }
     setEmployeeDialogOpen(false);
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        form.setValue('scheduleDocument', reader.result as string);
-        toast({
-          title: 'File Uploaded',
-          description: `"${file.name}" has been selected for analysis.`,
-        });
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const onSubmit = (values: ScheduleConfig) => {
@@ -721,20 +706,6 @@ export function ShiftScheduleForm({
                     </FormItem>
                   )}
                 />
-
-                <FormItem>
-                  <FormLabel>Upload Existing Schedule (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Upload an image of a current schedule for the AI to analyze.
-                  </FormDescription>
-                </FormItem>
               </div>
             </CardContent>
           </Card>

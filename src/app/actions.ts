@@ -5,6 +5,7 @@ import {
   analyzeShiftSchedule,
   type AnalyzeShiftScheduleOutput,
 } from '@/ai/flows/analyze-shift-schedule';
+import { analyzeUploadedSchedule as analyzeUploadedScheduleFlow } from '@/ai/flows/analyze-uploaded-schedule';
 import type { ScheduleConfig } from '@/lib/schemas';
 import { differenceInDays } from 'date-fns';
 
@@ -71,7 +72,6 @@ export async function generateAndAnalyzeSchedule(
       shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
-      scheduleDocument: config.scheduleDocument,
     };
 
     const analysisResult = await analyzeShiftSchedule(analysisInput);
@@ -106,7 +106,6 @@ export async function reanalyzeSchedule(
       shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
-      scheduleDocument: config.scheduleDocument,
     };
 
     const analysisResult = await analyzeShiftSchedule(analysisInput);
@@ -122,6 +121,39 @@ export async function reanalyzeSchedule(
     return {
       data: null,
       error: `Gagal menganalisis ulang jadwal: ${errorMessage}`,
+    };
+  }
+}
+
+export async function analyzeUploadedSchedule(
+  config: ScheduleConfig
+): Promise<{ data: AnalyzeShiftScheduleOutput | null; error: string | null }> {
+  try {
+    if (!config.scheduleDocument) {
+      return { data: null, error: 'Silakan unggah gambar jadwal terlebih dahulu.' };
+    }
+
+    const analysisInput = {
+      employees: JSON.stringify(config.employees),
+      shiftCycle: JSON.stringify(config.shiftCycle),
+      employeesPerShift: JSON.stringify(config.employeesPerShift),
+      customRule: config.customRule,
+      scheduleDocument: config.scheduleDocument,
+    };
+
+    const analysisResult = await analyzeUploadedScheduleFlow(analysisInput);
+
+    return {
+      data: analysisResult,
+      error: null,
+    };
+  } catch (e) {
+    console.error(e);
+    const errorMessage =
+      e instanceof Error ? e.message : 'Terjadi kesalahan tidak dikenal.';
+    return {
+      data: null,
+      error: `Gagal menganalisis jadwal yang diunggah: ${errorMessage}`,
     };
   }
 }

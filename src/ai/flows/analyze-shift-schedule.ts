@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { AnalyzeShiftScheduleOutputSchema } from '@/ai/schemas';
 
 const AnalyzeShiftScheduleInputSchema = z.object({
   schedule: z
@@ -34,27 +35,11 @@ const AnalyzeShiftScheduleInputSchema = z.object({
     .string()
     .optional()
     .describe('Additional custom rules provided by the user.'),
-  scheduleDocument: z
-    .string()
-    .optional()
-    .describe(
-      "An image of an existing schedule, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
 });
 export type AnalyzeShiftScheduleInput = z.infer<
   typeof AnalyzeShiftScheduleInputSchema
 >;
 
-const AnalyzeShiftScheduleOutputSchema = z.object({
-  issues: z
-    .array(z.string())
-    .describe('Daftar masalah yang teridentifikasi dalam jadwal shift.'),
-  suggestions: z
-    .array(z.string())
-    .describe(
-      'Daftar saran untuk menyelesaikan masalah yang teridentifikasi.'
-    ),
-});
 export type AnalyzeShiftScheduleOutput = z.infer<
   typeof AnalyzeShiftScheduleOutputSchema
 >;
@@ -84,11 +69,6 @@ Analisis Anda harus memeriksa:
 {{#if customRule}}
 Pengguna juga memberikan aturan khusus ini yang seharusnya diikuti: {{{customRule}}}
 Analisis Anda harus memeriksa apakah jadwal yang dihasilkan mematuhi aturan ini.
-{{/if}}
-
-{{#if scheduleDocument}}
-Pengguna juga telah mengunggah gambar jadwal nyata yang sudah ada untuk konteks dan perbandingan. Gunakan ini untuk menginformasikan analisis Anda. Misalnya, Anda dapat membandingkan jadwal yang dihasilkan dengan yang diunggah untuk melihat apakah ada penyimpangan signifikan dalam pola, atau menggunakannya untuk lebih memahami kebijakan perusahaan yang tidak disebutkan.
-Gambar Jadwal yang Diunggah: {{media url=scheduleDocument}}
 {{/if}}
 
 Berdasarkan semua informasi ini, berikan analisis Anda dalam Bahasa Indonesia dalam format JSON yang telah ditentukan.`,
