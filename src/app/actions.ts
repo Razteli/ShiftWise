@@ -125,20 +125,19 @@ export async function reanalyzeSchedule(
   }
 }
 
-export async function analyzeUploadedSchedule(
-  config: ScheduleConfig
-): Promise<{ data: AnalyzeShiftScheduleOutput | null; error: string | null }> {
+export async function analyzeUploadedSchedule(formData: {
+  scheduleDocument: string;
+}): Promise<{ data: AnalyzeShiftScheduleOutput | null; error: string | null }> {
   try {
-    if (!config.scheduleDocument) {
-      return { data: null, error: 'Silakan unggah gambar jadwal terlebih dahulu.' };
+    if (!formData.scheduleDocument) {
+      return {
+        data: null,
+        error: 'Silakan unggah gambar jadwal terlebih dahulu.',
+      };
     }
 
     const analysisInput = {
-      employees: JSON.stringify(config.employees),
-      shiftCycle: JSON.stringify(config.shiftCycle),
-      employeesPerShift: JSON.stringify(config.employeesPerShift),
-      customRule: config.customRule,
-      scheduleDocument: config.scheduleDocument,
+      scheduleDocument: formData.scheduleDocument,
     };
 
     const analysisResult = await analyzeUploadedScheduleFlow(analysisInput);

@@ -14,25 +14,6 @@ import type { AnalyzeShiftScheduleOutput } from './analyze-shift-schedule';
 import { AnalyzeShiftScheduleOutputSchema } from '@/ai/schemas';
 
 const AnalyzeUploadedScheduleInputSchema = z.object({
-  employees: z
-    .string()
-    .describe(
-      'A JSON string representing the list of employees, including their name, status, and level.'
-    ),
-  shiftCycle: z
-    .string()
-    .describe(
-      'A JSON string representing the shift cycle configuration used in the schedule.'
-    ),
-  employeesPerShift: z
-    .string()
-    .describe(
-      'A JSON string representing the number of employees required for each shift (morning, afternoon, night).'
-    ),
-  customRule: z
-    .string()
-    .optional()
-    .describe('Additional custom rules provided by the user.'),
   scheduleDocument: z
     .string()
     .describe(
@@ -53,28 +34,24 @@ const analyzeUploadedSchedulePrompt = ai.definePrompt({
   name: 'analyzeUploadedSchedulePrompt',
   input: { schema: AnalyzeUploadedScheduleInputSchema },
   output: { schema: AnalyzeShiftScheduleOutputSchema },
-  prompt: `Anda adalah seorang analis jadwal shift yang sangat ahli. Tugas Anda adalah menganalisis jadwal shift yang ada di dalam GAMBAR yang diunggah pengguna.
+  prompt: `Anda adalah AI analis jadwal shift yang sangat ahli. Tugas Anda adalah menganalisis secara komprehensif jadwal shift yang ada dalam gambar yang diunggah. Anda harus menyimpulkan semua informasi yang diperlukan langsung dari gambar.
 
-TUGAS UTAMA:
-1.  **EKSTRAKSI DATA**: Pertama, secara internal, ekstrak informasi jadwal dari gambar. Identifikasi nama karyawan dan shift mereka setiap hari.
-2.  **ANALISIS MENDALAM**: Analisis jadwal yang telah Anda ekstrak berdasarkan informasi konfigurasi yang diberikan (kebutuhan staf, daftar karyawan, dll.).
+GAMBAR JADWAL: {{media url=scheduleDocument}}
 
-INFORMASI KONFIGURASI:
--   **Gambar Jadwal**: {{media url=scheduleDocument}} (INI ADALAH SUMBER UTAMA JADWAL YANG HARUS DIANALISIS)
--   **Daftar Karyawan (JSON)**: {{{employees}}}
--   **Konfigurasi Siklus Shift (JSON)**: {{{shiftCycle}}}
--   **Kebutuhan Karyawan per Shift (JSON)**: {{{employeesPerShift}}}
-{{#if customRule}}
--   **Aturan Khusus Pengguna**: {{{customRule}}}
-{{/if}}
+TUGAS ANDA:
+1.  **Ekstrak dan Simpulkan**:
+    *   Ekstrak nama semua karyawan dan jadwal shift mereka (Pagi, Siang, Malam, Libur) untuk setiap hari.
+    *   Simpulkan kebutuhan staf untuk setiap shift (Pagi, Siang, Malam) dengan menghitung jumlah orang yang dijadwalkan di setiap shift pada hari-hari biasa. Anggap ini sebagai kebutuhan staf yang diinginkan.
+    *   Simpulkan aturan atau pola yang mungkin ada (misalnya, siklus shift, aturan hari libur).
 
-POIN ANALISIS:
--   **Kecukupan Staf**: Apakah ada kekurangan atau kelebihan staf pada shift tertentu dibandingkan dengan kebutuhan?
--   **Kepatuhan Aturan**: Apakah aturan khusus pengguna (jika ada) dipatuhi?
--   **Keseimbangan Beban Kerja**: Apakah total shift dan hari libur terdistribusi secara adil di antara karyawan?
--   **Kepatuhan Pola**: Apakah jadwal mengikuti pola siklus shift yang diinginkan?
+2.  **Analisis Mendalam**: Berdasarkan informasi yang Anda ekstrak dan simpulkan, lakukan analisis lengkap.
+    *   **Kecukupan Staf**: Identifikasi hari atau shift mana pun di mana jumlah staf aktual secara signifikan menyimpang dari kebutuhan staf yang Anda simpulkan. Apakah ada kekurangan atau kelebihan staf?
+    *   **Keseimbangan Beban Kerja**: Apakah total shift (Pagi, Siang, Malam) dan hari libur didistribusikan secara adil di antara semua karyawan? Hitung total untuk setiap kategori per karyawan dan soroti ketidakseimbangan yang signifikan.
+    *   **Pola yang Dilanggar**: Apakah ada karyawan yang polanya secara drastis berbeda dari yang lain atau melanggar pola umum yang Anda simpulkan? (misalnya, terlalu banyak shift malam berturut-turut).
 
-Setelah analisis selesai, berikan hasilnya dalam Bahasa Indonesia dalam format JSON yang telah ditentukan (issues dan suggestions).`,
+3.  **Hasil Output**: Berikan hasil analisis Anda dalam Bahasa Indonesia, dalam format JSON yang telah ditentukan. Fokus pada masalah yang dapat ditindaklanjuti dan saran yang bermanfaat.
+    *   **issues**: Daftar masalah yang jelas dan spesifik.
+    *   **suggestions**: Saran konkret untuk memperbaiki setiap masalah.`,
 });
 
 const analyzeUploadedScheduleFlow = ai.defineFlow(
