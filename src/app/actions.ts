@@ -55,6 +55,7 @@ export async function generateAndAnalyzeSchedule(
       startDate: config.startDate.toISOString(),
       endDate: config.endDate.toISOString(),
       numberOfDays: numberOfDays,
+      monthlyOffDays: config.monthlyOffDays,
       customRule: config.customRule,
     };
 
@@ -71,6 +72,7 @@ export async function generateAndAnalyzeSchedule(
       schedule: suggestionResult.schedule,
       employees: employeesJson,
       employeesPerShift: employeesPerShiftJson,
+      monthlyOffDays: config.monthlyOffDays,
       customRule: config.customRule,
     };
 
@@ -103,6 +105,7 @@ export async function reanalyzeSchedule(
       schedule: schedule,
       employees: employeesJson,
       employeesPerShift: employeesPerShiftJson,
+      monthlyOffDays: config.monthlyOffDays,
       customRule: config.customRule,
     };
 

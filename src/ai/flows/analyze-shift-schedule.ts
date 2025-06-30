@@ -26,6 +26,10 @@ const AnalyzeShiftScheduleInputSchema = z.object({
     .describe(
       'A JSON string representing the number of employees required for each shift (morning, afternoon, night).'
     ),
+  monthlyOffDays: z
+    .number()
+    .optional()
+    .describe('The minimum number of off days per employee in a month.'),
   customRule: z
     .string()
     .optional()
@@ -58,6 +62,10 @@ Karyawan yang Dibutuhkan per Shift (JSON): {{{employeesPerShift}}}
 Analisis Anda harus memeriksa:
 1. Kekurangan atau kelebihan staf pada hari apa pun untuk shift apa pun, berdasarkan jumlah karyawan yang dibutuhkan.
 2. Keseimbangan beban kerja antar karyawan.
+
+{{#if monthlyOffDays}}
+3. Jumlah hari libur minimum: Setiap karyawan harus memiliki setidaknya {{monthlyOffDays}} hari libur. Periksa apakah aturan ini terpenuhi.
+{{/if}}
 
 {{#if customRule}}
 Pengguna juga memberikan aturan khusus ini yang seharusnya diikuti: {{{customRule}}}

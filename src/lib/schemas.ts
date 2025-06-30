@@ -20,8 +20,12 @@ export const scheduleConfigSchema = z
     }),
     startDate: z.date({ required_error: 'Start date is required.' }),
     endDate: z.date({ required_error: 'End date is required.' }),
+    monthlyOffDays: z.coerce
+      .number()
+      .int()
+      .min(0, 'Jumlah hari libur harus 0 atau lebih.')
+      .optional(),
     customRule: z.string().optional(),
-    scheduleDocument: z.string().optional(), // for the data URI
   })
   .refine(data => data.endDate >= data.startDate, {
     message: 'End date cannot be before start date.',

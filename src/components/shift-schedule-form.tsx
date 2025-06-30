@@ -121,6 +121,7 @@ export function ShiftScheduleForm({
       },
       startDate: new Date(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 29)),
+      monthlyOffDays: 8,
       customRule: '',
     },
   });
@@ -167,8 +168,6 @@ export function ShiftScheduleForm({
             endDate: savedData.endDate
               ? new Date(savedData.endDate)
               : new Date(new Date().setDate(new Date().getDate() + 29)),
-            // Ensure scheduleDocument is reset
-            scheduleDocument: '',
           };
           form.reset(valuesToLoad);
         }
@@ -189,8 +188,6 @@ export function ShiftScheduleForm({
       try {
         if (typeof window !== 'undefined') {
           const valueToSave = { ...value };
-          // The file input value (data URI) should not be persisted
-          delete (valueToSave as Partial<ScheduleConfig>).scheduleDocument;
           window.localStorage.setItem(
             LOCAL_STORAGE_KEY,
             JSON.stringify(valueToSave)
@@ -604,6 +601,28 @@ export function ShiftScheduleForm({
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="monthlyOffDays"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Jumlah Hari Libur per Bulan</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          placeholder="Contoh: 8"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Atur jumlah minimal hari libur yang harus diterima setiap karyawan dalam sebulan.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
