@@ -93,11 +93,40 @@ const DepkesCalculator = () => {
     const totalNurses = Math.ceil(totalNursesWithCorrection);
 
     const distribution = { morning: 0.47, afternoon: 0.36, night: 0.17 };
+    
+    const morningRaw = totalNurses * distribution.morning;
+    const afternoonRaw = totalNurses * distribution.afternoon;
+    const nightRaw = totalNurses * distribution.night;
+
+    const morningFloor = Math.floor(morningRaw);
+    const afternoonFloor = Math.floor(afternoonRaw);
+    const nightFloor = Math.floor(nightRaw);
+
+    let remainderToDistribute = totalNurses - (morningFloor + afternoonFloor + nightFloor);
+
+    const remainders = [
+      { name: 'morning' as const, value: morningRaw - morningFloor },
+      { name: 'afternoon' as const, value: afternoonRaw - afternoonFloor },
+      { name: 'night' as const, value: nightRaw - nightFloor },
+    ];
+    
+    remainders.sort((a, b) => b.value - a.value);
+
+    const shiftDistribution = {
+      morning: morningFloor,
+      afternoon: afternoonFloor,
+      night: nightFloor,
+    };
+
+    for (let i = 0; i < remainderToDistribute; i++) {
+      shiftDistribution[remainders[i].name]++;
+    }
+
     setResult({
       total: totalNurses,
-      morning: Math.ceil(totalNurses * distribution.morning),
-      afternoon: Math.ceil(totalNurses * distribution.afternoon),
-      night: Math.ceil(totalNurses * distribution.night),
+      morning: shiftDistribution.morning,
+      afternoon: shiftDistribution.afternoon,
+      night: shiftDistribution.night,
     });
     setShowAnalysis(true);
   };
@@ -191,11 +220,40 @@ const DouglasCalculator = () => {
         const totalNurses = Math.ceil(totalCareHours / workingHoursPerDay);
 
         const distribution = { morning: 0.45, afternoon: 0.35, night: 0.20 };
+        
+        const morningRaw = totalNurses * distribution.morning;
+        const afternoonRaw = totalNurses * distribution.afternoon;
+        const nightRaw = totalNurses * distribution.night;
+
+        const morningFloor = Math.floor(morningRaw);
+        const afternoonFloor = Math.floor(afternoonRaw);
+        const nightFloor = Math.floor(nightRaw);
+
+        let remainderToDistribute = totalNurses - (morningFloor + afternoonFloor + nightFloor);
+
+        const remainders = [
+          { name: 'morning' as const, value: morningRaw - morningFloor },
+          { name: 'afternoon' as const, value: afternoonRaw - afternoonFloor },
+          { name: 'night' as const, value: nightRaw - nightFloor },
+        ];
+        
+        remainders.sort((a, b) => b.value - a.value);
+
+        const shiftDistribution = {
+          morning: morningFloor,
+          afternoon: afternoonFloor,
+          night: nightFloor,
+        };
+
+        for (let i = 0; i < remainderToDistribute; i++) {
+          shiftDistribution[remainders[i].name]++;
+        }
+
         setResult({
             total: totalNurses,
-            morning: Math.ceil(totalNurses * distribution.morning),
-            afternoon: Math.ceil(totalNurses * distribution.afternoon),
-            night: Math.ceil(totalNurses * distribution.night),
+            morning: shiftDistribution.morning,
+            afternoon: shiftDistribution.afternoon,
+            night: shiftDistribution.night,
         });
         setShowAnalysis(true);
     };
@@ -425,7 +483,7 @@ const OperatingRoomCalculator = () => {
   const totalMediumOpsHours = mediumOpsCount * mediumOpsHours * mediumOpsNurses;
   const totalSmallOpsHours = smallOpsCount * smallOpsHours * smallOpsNurses;
   const totalNurseHours = (totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours) * numberOfRooms;
-  const baseNurses = totalNurseHours / workHours;
+  const baseNurses = workHours > 0 ? totalNurseHours / workHours : 0;
   const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
 
   return (
