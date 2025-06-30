@@ -254,6 +254,72 @@ const GilliesCalculator = () => {
     );
 };
 
+const OperatingRoomCalculator = () => {
+    const [inputs, setInputs] = useState({
+        avgOperations: 10,
+        avgOperationDuration: 2.5,
+        workHours: 7,
+        nursesPerTeam: 2,
+    });
+    const [result, setResult] = useState<Result | null>(null);
+
+    const handleCalculate = () => {
+        const { avgOperations, avgOperationDuration, workHours, nursesPerTeam } = inputs;
+        
+        if (workHours <= 0) {
+            setResult({ total: 0 });
+            return;
+        }
+
+        const totalOperationHours = avgOperations * avgOperationDuration;
+        const requiredTeams = Math.ceil(totalOperationHours / workHours);
+        const totalNurses = requiredTeams * nursesPerTeam;
+
+        setResult({ total: totalNurses });
+    };
+
+     const handleReset = () => {
+        setInputs({ avgOperations: 10, avgOperationDuration: 2.5, workHours: 7, nursesPerTeam: 2 });
+        setResult(null);
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Metode Kamar Operasi</CardTitle>
+                <CardDescription>Berdasarkan jumlah dan durasi operasi harian.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="op-avg-ops">Rata-rata jumlah operasi/hari</Label>
+                        <Input id="op-avg-ops" type="number" value={inputs.avgOperations} onChange={e => setInputs(i => ({ ...i, avgOperations: Number(e.target.value) }))} />
+                    </div>
+                    <div>
+                        <Label htmlFor="op-avg-duration">Rata-rata lama operasi (jam)</Label>
+                        <Input id="op-avg-duration" type="number" value={inputs.avgOperationDuration} onChange={e => setInputs(i => ({ ...i, avgOperationDuration: Number(e.target.value) }))} />
+                    </div>
+                    <div>
+                        <Label htmlFor="op-work-hours">Jam kerja efektif/hari</Label>
+                        <Input id="op-work-hours" type="number" value={inputs.workHours} onChange={e => setInputs(i => ({ ...i, workHours: Number(e.target.value) }))} />
+                    </div>
+                     <div>
+                        <Label htmlFor="op-nurses-team">Jumlah perawat per tim operasi</Label>
+                        <Input id="op-nurses-team" type="number" value={inputs.nursesPerTeam} onChange={e => setInputs(i => ({ ...i, nursesPerTeam: Number(e.target.value) }))} />
+                    </div>
+                </div>
+                 <div className="flex gap-2 pt-2">
+                    <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
+                    <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
+                </div>
+            </CardContent>
+            <CardFooter>
+                 <ResultDisplay result={result} unit="Perawat" />
+            </CardFooter>
+        </Card>
+    );
+};
+
 export function NursingCalculator() {
   return (
     <div>
@@ -267,10 +333,11 @@ export function NursingCalculator() {
         </p>
       </div>
       <Tabs defaultValue="depkes" className="w-full max-w-2xl mx-auto">
-        <TabsList className="grid w-full grid-cols-3 mb-4">
+        <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="depkes">Depkes RI</TabsTrigger>
           <TabsTrigger value="douglas">Douglas</TabsTrigger>
           <TabsTrigger value="gillies">Gillies</TabsTrigger>
+          <TabsTrigger value="operating_room">Kamar Operasi</TabsTrigger>
         </TabsList>
         <TabsContent value="depkes">
           <DepkesCalculator />
@@ -280,6 +347,9 @@ export function NursingCalculator() {
         </TabsContent>
         <TabsContent value="gillies">
           <GilliesCalculator />
+        </TabsContent>
+        <TabsContent value="operating_room">
+          <OperatingRoomCalculator />
         </TabsContent>
       </Tabs>
     </div>
