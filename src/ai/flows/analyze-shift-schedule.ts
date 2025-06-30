@@ -21,11 +21,6 @@ const AnalyzeShiftScheduleInputSchema = z.object({
     .describe(
       'A JSON string representing the list of employees, including their name, status, and level.'
     ),
-  shiftCycle: z
-    .string()
-    .describe(
-      'A JSON string representing the shift cycle configuration used in the schedule.'
-    ),
   employeesPerShift: z
     .string()
     .describe(
@@ -58,13 +53,11 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
 
 Jadwal Shift yang Dihasilkan: {{{schedule}}}
 Karyawan (JSON): {{{employees}}}
-Konfigurasi Siklus Shift yang Digunakan (JSON): {{{shiftCycle}}}
 Karyawan yang Dibutuhkan per Shift (JSON): {{{employeesPerShift}}}
 
 Analisis Anda harus memeriksa:
 1. Kekurangan atau kelebihan staf pada hari apa pun untuk shift apa pun, berdasarkan jumlah karyawan yang dibutuhkan.
-2. Kepatuhan terhadap pola siklus shift yang diinginkan.
-3. Keseimbangan beban kerja antar karyawan.
+2. Keseimbangan beban kerja antar karyawan.
 
 {{#if customRule}}
 Pengguna juga memberikan aturan khusus ini yang seharusnya diikuti: {{{customRule}}}

@@ -13,20 +13,6 @@ export const scheduleConfigSchema = z
     employees: z
       .array(employeeSchema)
       .min(1, 'At least one employee is required.'),
-    shiftCycle: z
-      .object({
-        morning: z.coerce.number().int().min(0, 'Must be 0 or more.'),
-        afternoon: z.coerce.number().int().min(0, 'Must be 0 or more.'),
-        night: z.coerce.number().int().min(0, 'Must be 0 or more.'),
-        off: z.coerce.number().int().min(0, 'Must be 0 or more.'),
-      })
-      .refine(
-        cycle => cycle.morning + cycle.afternoon + cycle.night + cycle.off > 0,
-        {
-          message: 'At least one shift cycle day must be configured.',
-          path: ['morning'],
-        }
-      ),
     employeesPerShift: z.object({
       morning: z.coerce.number().int().min(0, 'Must be 0 or more.'),
       afternoon: z.coerce.number().int().min(0, 'Must be 0 or more.'),

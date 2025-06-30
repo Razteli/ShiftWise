@@ -17,11 +17,6 @@ const SuggestShiftScheduleInputSchema = z.object({
     .describe(
       'A JSON string representing the list of employees, including their name, status (active, on_leave, day_off), and level (junior, intermediate, senior).'
     ),
-  shiftCycle: z
-    .string()
-    .describe(
-      'A JSON string representing the desired shift cycle configuration (e.g., {"morning": 2, "afternoon": 2, "night": 2, "off": 2}). This is used for analysis, not direct generation.'
-    ),
   employeesPerShift: z
     .string()
     .describe(

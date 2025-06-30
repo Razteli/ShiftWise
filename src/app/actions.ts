@@ -43,7 +43,6 @@ export async function generateAndAnalyzeSchedule(
 
     const employeesJson = JSON.stringify(config.employees);
     const employeesPerShiftJson = JSON.stringify(config.employeesPerShift);
-    const shiftCycleJson = JSON.stringify(config.shiftCycle);
 
     const numberOfDays = differenceInDays(config.endDate, config.startDate) + 1;
     if (numberOfDays <= 0) {
@@ -52,7 +51,6 @@ export async function generateAndAnalyzeSchedule(
 
     const suggestionInput = {
       employees: employeesJson,
-      shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       startDate: config.startDate.toISOString(),
       endDate: config.endDate.toISOString(),
@@ -72,7 +70,6 @@ export async function generateAndAnalyzeSchedule(
     const analysisInput = {
       schedule: suggestionResult.schedule,
       employees: employeesJson,
-      shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
     };
@@ -101,12 +98,10 @@ export async function reanalyzeSchedule(
   try {
     const employeesJson = JSON.stringify(config.employees);
     const employeesPerShiftJson = JSON.stringify(config.employeesPerShift);
-    const shiftCycleJson = JSON.stringify(config.shiftCycle);
 
     const analysisInput = {
       schedule: schedule,
       employees: employeesJson,
-      shiftCycle: shiftCycleJson,
       employeesPerShift: employeesPerShiftJson,
       customRule: config.customRule,
     };
