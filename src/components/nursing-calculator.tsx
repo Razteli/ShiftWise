@@ -261,6 +261,7 @@ const OperatingRoomCalculator = () => {
     workHours: 7,
     nursesPerTeam: 2,
     correction: 25,
+    numberOfRooms: 1,
   });
   const [result, setResult] = useState<Result | null>(null);
 
@@ -271,6 +272,7 @@ const OperatingRoomCalculator = () => {
       workHours,
       nursesPerTeam,
       correction,
+      numberOfRooms,
     } = inputs;
 
     if (workHours <= 0) {
@@ -278,7 +280,7 @@ const OperatingRoomCalculator = () => {
       return;
     }
 
-    const totalOperationHours = avgOperations * avgOperationDuration;
+    const totalOperationHours = avgOperations * avgOperationDuration * numberOfRooms;
     const baseNurses = (totalOperationHours / workHours) * nursesPerTeam;
     const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
 
@@ -292,6 +294,7 @@ const OperatingRoomCalculator = () => {
       workHours: 7,
       nursesPerTeam: 2,
       correction: 25,
+      numberOfRooms: 1,
     });
     setResult(null);
   };
@@ -307,7 +310,9 @@ const OperatingRoomCalculator = () => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="op-avg-ops">Rata-rata jumlah operasi/hari</Label>
+            <Label htmlFor="op-avg-ops">
+              Rata-rata jumlah operasi/kamar/hari
+            </Label>
             <Input
               id="op-avg-ops"
               type="number"
@@ -351,6 +356,17 @@ const OperatingRoomCalculator = () => {
               value={inputs.nursesPerTeam}
               onChange={(e) =>
                 setInputs((i) => ({ ...i, nursesPerTeam: Number(e.target.value) }))
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="op-rooms">Jumlah kamar operasi</Label>
+            <Input
+              id="op-rooms"
+              type="number"
+              value={inputs.numberOfRooms}
+              onChange={(e) =>
+                setInputs((i) => ({ ...i, numberOfRooms: Number(e.target.value) }))
               }
             />
           </div>
