@@ -122,7 +122,6 @@ export function ShiftScheduleForm({
       startDate: new Date(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 29)),
       customRule: '',
-      scheduleDocument: '',
     },
   });
 
@@ -276,9 +275,9 @@ export function ShiftScheduleForm({
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="rounded-md border">
+                <div className="relative max-h-60 overflow-y-auto rounded-md border">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-card">
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Level</TableHead>
