@@ -15,6 +15,20 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calculator, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface Result {
   total: number;
@@ -408,6 +422,56 @@ const GilliesCalculator = () => {
                     <Label htmlFor="gillies-correction">Faktor koreksi (non-nursing jobs) (%)</Label>
                     <Input id="gillies-correction" type="number" value={inputs.correction} onChange={e => setInputs(i => ({ ...i, correction: e.target.value }))} />
                 </div>
+                <Accordion type="single" collapsible className="w-full pt-2">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger className="text-sm font-normal py-2">
+                      Lihat Petunjuk Penentuan Jam Perawatan (Depkes RI)
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-xs text-muted-foreground pb-2">
+                        Gunakan tabel referensi ini untuk membantu menentukan
+                        nilai &quot;Rata-rata jam perawatan per pasien&quot;.
+                      </p>
+                      <Table className="text-xs border">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Klasifikasi</TableHead>
+                            <TableHead>Kriteria Pasien</TableHead>
+                            <TableHead className="text-right">
+                              Jam/24 jam
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">Minimal</TableCell>
+                            <TableCell>
+                              Bisa mandiri (kebersihan, makan, ambulasi),
+                              observasi TTV per shift.
+                            </TableCell>
+                            <TableCell className="text-right">1-2 jam</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">Parsial</TableCell>
+                            <TableCell>
+                              Perlu bantuan (kebersihan, makan), observasi TTV
+                              per 4 jam, terapi IV.
+                            </TableCell>
+                            <TableCell className="text-right">3-4 jam</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">Total</TableCell>
+                            <TableCell>
+                              Tergantung total, posisi diatur, observasi TTV per
+                              2 jam, pakai ventilator.
+                            </TableCell>
+                            <TableCell className="text-right">5-6 jam</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
                  <div className="flex gap-2 pt-2">
                     <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
                     <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
