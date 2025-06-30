@@ -82,7 +82,7 @@ const defaultEmployee: Employee = {
   status: 'active',
 };
 
-const LOCAL_STORAGE_KEY = 'shiftwise-form-config';
+const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v1';
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
