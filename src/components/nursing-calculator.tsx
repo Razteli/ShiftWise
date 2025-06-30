@@ -255,70 +255,138 @@ const GilliesCalculator = () => {
 };
 
 const OperatingRoomCalculator = () => {
-    const [inputs, setInputs] = useState({
-        avgOperations: 10,
-        avgOperationDuration: 2.5,
-        workHours: 7,
-        nursesPerTeam: 2,
+  const [inputs, setInputs] = useState({
+    avgOperations: 10,
+    avgOperationDuration: 2.5,
+    workHours: 7,
+    nursesPerTeam: 2,
+    correction: 25,
+  });
+  const [result, setResult] = useState<Result | null>(null);
+
+  const handleCalculate = () => {
+    const {
+      avgOperations,
+      avgOperationDuration,
+      workHours,
+      nursesPerTeam,
+      correction,
+    } = inputs;
+
+    if (workHours <= 0) {
+      setResult({ total: 0 });
+      return;
+    }
+
+    const totalOperationHours = avgOperations * avgOperationDuration;
+    const baseNurses = (totalOperationHours / workHours) * nursesPerTeam;
+    const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
+
+    setResult({ total: Math.ceil(totalNursesWithCorrection) });
+  };
+
+  const handleReset = () => {
+    setInputs({
+      avgOperations: 10,
+      avgOperationDuration: 2.5,
+      workHours: 7,
+      nursesPerTeam: 2,
+      correction: 25,
     });
-    const [result, setResult] = useState<Result | null>(null);
+    setResult(null);
+  };
 
-    const handleCalculate = () => {
-        const { avgOperations, avgOperationDuration, workHours, nursesPerTeam } = inputs;
-        
-        if (workHours <= 0) {
-            setResult({ total: 0 });
-            return;
-        }
-
-        const totalOperationHours = avgOperations * avgOperationDuration;
-        const requiredTeams = Math.ceil(totalOperationHours / workHours);
-        const totalNurses = requiredTeams * nursesPerTeam;
-
-        setResult({ total: totalNurses });
-    };
-
-     const handleReset = () => {
-        setInputs({ avgOperations: 10, avgOperationDuration: 2.5, workHours: 7, nursesPerTeam: 2 });
-        setResult(null);
-    };
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Metode Kamar Operasi</CardTitle>
-                <CardDescription>Berdasarkan jumlah dan durasi operasi harian.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="op-avg-ops">Rata-rata jumlah operasi/hari</Label>
-                        <Input id="op-avg-ops" type="number" value={inputs.avgOperations} onChange={e => setInputs(i => ({ ...i, avgOperations: Number(e.target.value) }))} />
-                    </div>
-                    <div>
-                        <Label htmlFor="op-avg-duration">Rata-rata lama operasi (jam)</Label>
-                        <Input id="op-avg-duration" type="number" value={inputs.avgOperationDuration} onChange={e => setInputs(i => ({ ...i, avgOperationDuration: Number(e.target.value) }))} />
-                    </div>
-                    <div>
-                        <Label htmlFor="op-work-hours">Jam kerja efektif/hari</Label>
-                        <Input id="op-work-hours" type="number" value={inputs.workHours} onChange={e => setInputs(i => ({ ...i, workHours: Number(e.target.value) }))} />
-                    </div>
-                     <div>
-                        <Label htmlFor="op-nurses-team">Jumlah perawat per tim operasi</Label>
-                        <Input id="op-nurses-team" type="number" value={inputs.nursesPerTeam} onChange={e => setInputs(i => ({ ...i, nursesPerTeam: Number(e.target.value) }))} />
-                    </div>
-                </div>
-                 <div className="flex gap-2 pt-2">
-                    <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
-                    <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
-                </div>
-            </CardContent>
-            <CardFooter>
-                 <ResultDisplay result={result} unit="Perawat" />
-            </CardFooter>
-        </Card>
-    );
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Metode Kamar Operasi (Koreksi)</CardTitle>
+        <CardDescription>
+          Berdasarkan jumlah operasi dengan tambahan faktor koreksi.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="op-avg-ops">Rata-rata jumlah operasi/hari</Label>
+            <Input
+              id="op-avg-ops"
+              type="number"
+              value={inputs.avgOperations}
+              onChange={(e) =>
+                setInputs((i) => ({ ...i, avgOperations: Number(e.target.value) }))
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="op-avg-duration">
+              Rata-rata lama operasi (jam)
+            </Label>
+            <Input
+              id="op-avg-duration"
+              type="number"
+              value={inputs.avgOperationDuration}
+              onChange={(e) =>
+                setInputs((i) => ({ ...i, avgOperationDuration: Number(e.target.value) }))
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="op-work-hours">Jam kerja efektif/hari</Label>
+            <Input
+              id="op-work-hours"
+              type="number"
+              value={inputs.workHours}
+              onChange={(e) =>
+                setInputs((i) => ({ ...i, workHours: Number(e.target.value) }))
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="op-nurses-team">
+              Jumlah perawat per tim operasi
+            </Label>
+            <Input
+              id="op-nurses-team"
+              type="number"
+              value={inputs.nursesPerTeam}
+              onChange={(e) =>
+                setInputs((i) => ({ ...i, nursesPerTeam: Number(e.target.value) }))
+              }
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="op-correction">Faktor Koreksi (%)</Label>
+          <Input
+            id="op-correction"
+            type="number"
+            value={inputs.correction}
+            onChange={(e) =>
+              setInputs((i) => ({ ...i, correction: Number(e.target.value) }))
+            }
+          />
+           <p className="text-xs text-muted-foreground pt-1">
+              Tambahan untuk tugas non-keperawatan, cuti, dll. (mis. 25%)
+          </p>
+        </div>
+        <div className="flex gap-2 pt-2">
+          <Button onClick={handleCalculate} className="w-full">
+            <Calculator />
+            Hitung
+          </Button>
+          <Button onClick={handleReset} variant="outline" className="w-full">
+            <RotateCcw />
+            Reset
+          </Button>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <ResultDisplay result={result} unit="Perawat" />
+      </CardFooter>
+    </Card>
+  );
 };
+
 
 export function NursingCalculator() {
   return (
