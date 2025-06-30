@@ -160,8 +160,8 @@ export function ScheduleAnalyzer() {
         </p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
-        <div className="w-full md:max-w-md">
+      <div className="flex flex-col items-center gap-8">
+        <div className="w-full max-w-lg">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Card className="shadow-sm">
@@ -206,7 +206,7 @@ export function ScheduleAnalyzer() {
           </Form>
         </div>
 
-        <div className="flex-1 w-full min-w-0">
+        <div className="w-full max-w-4xl">
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle>Hasil Analisis AI</CardTitle>
