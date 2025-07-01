@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Calculator, RotateCcw } from 'lucide-react';
+import { Calculator, RotateCcw, Plus, Trash } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Accordion,
@@ -720,6 +720,204 @@ const OperatingRoomCalculator = () => {
   );
 };
 
+interface Activity {
+  id: number;
+  name: string;
+  count: string;
+  time: string;
+}
+
+const WISNCalculator = () => {
+  const [inputs, setInputs] = useState({
+    workDaysPerYear: '260',
+    nonWorkDaysPerYear: '86',
+    hoursPerWorkDay: '7',
+    indirectCareMinutesPerDay: '60',
+  });
+  
+  const [activities, setActivities] = useState<Activity[]>([
+    { id: 1, name: 'Asuhan Pasien Minimal', count: '5000', time: '30' },
+    { id: 2, name: 'Asuhan Pasien Parsial', count: '2000', time: '60' },
+    { id: 3, name: 'Asuhan Pasien Total', count: '500', time: '120' },
+  ]);
+
+  const [result, setResult] = useState<Result | null>(null);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const { toast } = useToast();
+
+  const handleActivityChange = (id: number, field: keyof Omit<Activity, 'id'>, value: string) => {
+    setActivities(current => 
+      current.map(act => (act.id === id ? { ...act, [field]: value } : act))
+    );
+  };
+
+  const addActivity = () => {
+    setActivities(current => [
+      ...current,
+      { id: Date.now(), name: '', count: '', time: '' },
+    ]);
+  };
+
+  const removeActivity = (id: number) => {
+    setActivities(current => current.filter(act => act.id !== id));
+  };
+  
+  const handleCalculate = () => {
+    const workDays = Number(inputs.workDaysPerYear) || 0;
+    const nonWorkDays = Number(inputs.nonWorkDaysPerYear) || 0;
+    const hoursPerDay = Number(inputs.hoursPerWorkDay) || 0;
+    const indirectMinutes = Number(inputs.indirectCareMinutesPerDay) || 0;
+
+    const availableWorkDays = workDays - nonWorkDays;
+    if (availableWorkDays <= 0 || hoursPerDay <= 0) {
+      toast({
+        title: 'Input Tidak Valid',
+        description: 'Hari kerja tersedia dan jam kerja per hari harus lebih dari 0.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const availableWorkTimeHours = availableWorkDays * hoursPerDay;
+
+    const totalDirectCareHours = activities.reduce((total, act) => {
+      const count = Number(act.count) || 0;
+      const time = Number(act.time) || 0;
+      return total + (count * time) / 60;
+    }, 0);
+
+    const workloadStandard = totalDirectCareHours / availableWorkTimeHours;
+
+    const availableMinutesPerDay = hoursPerDay * 60;
+    const productiveMinutesPerDay = availableMinutesPerDay - indirectMinutes;
+
+    if (productiveMinutesPerDay <= 0) {
+      toast({
+        title: 'Input Tidak Valid',
+        description: 'Waktu kelonggaran tidak boleh melebihi total jam kerja harian.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const allowanceFactor = availableMinutesPerDay / productiveMinutesPerDay;
+
+    const totalNurses = workloadStandard * allowanceFactor;
+
+    setResult({ total: Math.ceil(totalNurses) });
+    setShowAnalysis(true);
+  };
+
+  const handleReset = () => {
+    setInputs({
+      workDaysPerYear: '260',
+      nonWorkDaysPerYear: '86',
+      hoursPerWorkDay: '7',
+      indirectCareMinutesPerDay: '60',
+    });
+    setActivities([
+      { id: 1, name: 'Asuhan Pasien Minimal', count: '5000', time: '30' },
+      { id: 2, name: 'Asuhan Pasien Parsial', count: '2000', time: '60' },
+      { id: 3, name: 'Asuhan Pasien Total', count: '500', time: '120' },
+    ]);
+    setResult(null);
+    setShowAnalysis(false);
+  };
+  
+  // For analysis display
+  const workDaysVal = Number(inputs.workDaysPerYear) || 0;
+  const nonWorkDaysVal = Number(inputs.nonWorkDaysPerYear) || 0;
+  const hoursPerDayVal = Number(inputs.hoursPerWorkDay) || 0;
+  const indirectMinutesVal = Number(inputs.indirectCareMinutesPerDay) || 0;
+  const availableWorkDaysVal = workDaysVal - nonWorkDaysVal;
+  const availableWorkTimeHoursVal = availableWorkDaysVal * hoursPerDayVal;
+  const totalDirectCareHoursVal = activities.reduce((total, act) => (total + (Number(act.count) || 0) * (Number(act.time) || 0) / 60), 0);
+  const workloadStandardVal = isFinite(totalDirectCareHoursVal / availableWorkTimeHoursVal) ? totalDirectCareHoursVal / availableWorkTimeHoursVal : 0;
+  const allowanceFactorVal = isFinite((hoursPerDayVal*60) / ((hoursPerDayVal*60) - indirectMinutesVal)) ? (hoursPerDayVal*60) / ((hoursPerDayVal*60) - indirectMinutesVal) : 0;
+  const totalNursesVal = workloadStandardVal * allowanceFactorVal;
+
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Metode WISN (Workload Indicators of Staffing Need)</CardTitle>
+        <CardDescription>Berdasarkan beban kerja nyata yang dibutuhkan untuk pelayanan.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-4 rounded-md border p-4">
+          <h4 className="font-semibold text-sm text-primary">1. Konfigurasi Waktu Kerja Tahunan</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div><Label>Hari Kerja/Tahun</Label><Input type="number" value={inputs.workDaysPerYear} onChange={e => setInputs(i => ({...i, workDaysPerYear: e.target.value}))} /></div>
+            <div><Label>Total Hari Non-Kerja</Label><Input type="number" value={inputs.nonWorkDaysPerYear} onChange={e => setInputs(i => ({...i, nonWorkDaysPerYear: e.target.value}))} /></div>
+            <div><Label>Jam Kerja/Hari</Label><Input type="number" value={inputs.hoursPerWorkDay} onChange={e => setInputs(i => ({...i, hoursPerWorkDay: e.target.value}))} /></div>
+          </div>
+        </div>
+        
+        <div className="space-y-4 rounded-md border p-4">
+          <h4 className="font-semibold text-sm text-primary">2. Beban Kerja Pokok (Direct Care)</h4>
+           <div className="overflow-x-auto">
+             <Table className="text-sm">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[40%]">Nama Kegiatan</TableHead>
+                    <TableHead>Jml. Klien/Tahun</TableHead>
+                    <TableHead>Waktu/Kegiatan (menit)</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activities.map((act, index) => (
+                    <TableRow key={act.id}>
+                      <TableCell><Input placeholder="Contoh: Merawat luka" value={act.name} onChange={e => handleActivityChange(act.id, 'name', e.target.value)} /></TableCell>
+                      <TableCell><Input type="number" placeholder="0" value={act.count} onChange={e => handleActivityChange(act.id, 'count', e.target.value)} /></TableCell>
+                      <TableCell><Input type="number" placeholder="0" value={act.time} onChange={e => handleActivityChange(act.id, 'time', e.target.value)} /></TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => removeActivity(act.id)} className="h-8 w-8 text-destructive/80 hover:text-destructive">
+                           <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+           </div>
+           <Button variant="outline" size="sm" onClick={addActivity} className="w-full mt-2"><Plus className="mr-2 h-4 w-4"/>Tambah Kegiatan</Button>
+        </div>
+
+        <div className="space-y-2 rounded-md border p-4">
+          <h4 className="font-semibold text-sm text-primary">3. Waktu Kelonggaran</h4>
+          <div>
+            <Label>Rata-rata waktu non-pelayanan per hari (menit)</Label>
+            <Input type="number" value={inputs.indirectCareMinutesPerDay} onChange={e => setInputs(i => ({...i, indirectCareMinutesPerDay: e.target.value}))} />
+            <p className="text-xs text-muted-foreground pt-1">
+              Contoh: Rapat, menyusun laporan, dll.
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex gap-2 pt-2">
+          <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
+          <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
+        </div>
+
+        {showAnalysis && result && isFinite(totalNursesVal) && (
+            <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
+                <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
+                <p className="text-muted-foreground">1. Waktu Kerja Tersedia: <br/><span className="font-mono text-foreground text-xs block pl-2">({workDaysVal} - {nonWorkDaysVal}) * {hoursPerDayVal} jam = <b>{availableWorkTimeHoursVal.toFixed(2)} jam/tahun</b></span></p>
+                <p className="text-muted-foreground">2. Kebutuhan Waktu Direct Care: <br/><span className="font-mono text-foreground text-xs block pl-2">Total dari semua kegiatan = <b>{totalDirectCareHoursVal.toFixed(2)} jam/tahun</b></span></p>
+                <p className="text-muted-foreground">3. Standar Beban Kerja: <br/><span className="font-mono text-foreground text-xs block pl-2">{totalDirectCareHoursVal.toFixed(2)} jam / {availableWorkTimeHoursVal.toFixed(2)} jam = <b>{workloadStandardVal.toFixed(4)}</b></span></p>
+                <p className="text-muted-foreground">4. Faktor Kelonggaran: <br/><span className="font-mono text-foreground text-xs block pl-2">({hoursPerDayVal} * 60) / (({hoursPerDayVal} * 60) - {indirectMinutesVal}) = <b>{allowanceFactorVal.toFixed(4)}</b></span></p>
+                <p className="text-muted-foreground">5. Total Kebutuhan Tenaga: <br/><span className="font-mono text-foreground text-xs block pl-2">{workloadStandardVal.toFixed(4)} * {allowanceFactorVal.toFixed(4)} = {totalNursesVal.toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span></p>
+            </div>
+        )}
+      </CardContent>
+      <CardFooter>
+        <ResultDisplay result={result} unit="Perawat" />
+      </CardFooter>
+    </Card>
+  );
+};
+
 
 export function NursingCalculator() {
   return (
@@ -734,11 +932,12 @@ export function NursingCalculator() {
         </p>
       </div>
       <Tabs defaultValue="depkes" className="w-full max-w-2xl mx-auto">
-        <TabsList className="grid w-full grid-cols-4 mb-4">
+        <TabsList className="grid w-full grid-cols-5 mb-4">
           <TabsTrigger value="depkes">Depkes RI</TabsTrigger>
           <TabsTrigger value="douglas">Douglas</TabsTrigger>
           <TabsTrigger value="gillies">Gillies</TabsTrigger>
           <TabsTrigger value="operating_room">Kamar Operasi</TabsTrigger>
+          <TabsTrigger value="wisn">WISN</TabsTrigger>
         </TabsList>
         <TabsContent value="depkes">
           <DepkesCalculator />
@@ -751,6 +950,9 @@ export function NursingCalculator() {
         </TabsContent>
         <TabsContent value="operating_room">
           <OperatingRoomCalculator />
+        </TabsContent>
+        <TabsContent value="wisn">
+          <WISNCalculator />
         </TabsContent>
       </Tabs>
     </div>
