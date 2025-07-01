@@ -514,8 +514,7 @@ const OperatingRoomCalculator = () => {
     smallOpsHours: '1',
     smallOpsNurses: '2',
     workHours: '7',
-    correction: '25',
-    numberOfRooms: '1',
+    offDays: '86',
   });
   const [result, setResult] = useState<Result | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -531,26 +530,37 @@ const OperatingRoomCalculator = () => {
     const smallOpsHours = Number(inputs.smallOpsHours) || 0;
     const smallOpsNurses = Number(inputs.smallOpsNurses) || 0;
     const workHours = Number(inputs.workHours) || 0;
-    const correction = Number(inputs.correction) || 0;
-    const numberOfRooms = Number(inputs.numberOfRooms) || 0;
+    const offDays = Number(inputs.offDays) || 0;
 
     if (workHours <= 0) {
-       toast({
+      toast({
         title: 'Input Tidak Valid',
         description: 'Jam kerja efektif harus lebih dari 0.',
         variant: 'destructive',
       });
       return;
     }
+    
+    if (offDays >= 365) {
+      toast({
+        title: 'Input Tidak Valid',
+        description: 'Jumlah hari libur tidak boleh 365 atau lebih.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const totalLargeOpsHours = largeOpsCount * largeOpsHours * largeOpsNurses;
-    const totalMediumOpsHours = mediumOpsCount * mediumOpsHours * mediumOpsNurses;
+    const totalMediumOpsHours =
+      mediumOpsCount * mediumOpsHours * mediumOpsNurses;
     const totalSmallOpsHours = smallOpsCount * smallOpsHours * smallOpsNurses;
 
-    const totalNurseHours = (totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours) * numberOfRooms;
+    const totalNurseHours =
+      totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours;
 
     const baseNurses = totalNurseHours / workHours;
-    const totalNursesWithCorrection = baseNurses * (1 + correction / 100);
+    const lossDayFactor = 365 / (365 - offDays);
+    const totalNursesWithCorrection = baseNurses * lossDayFactor;
 
     setResult({ total: Math.ceil(totalNursesWithCorrection) });
     setShowAnalysis(true);
@@ -558,10 +568,17 @@ const OperatingRoomCalculator = () => {
 
   const handleReset = () => {
     setInputs({
-      largeOpsCount: '2', largeOpsHours: '5', largeOpsNurses: '4',
-      mediumOpsCount: '4', mediumOpsHours: '2.5', mediumOpsNurses: '3',
-      smallOpsCount: '4', smallOpsHours: '1', smallOpsNurses: '2',
-      workHours: '7', correction: '25', numberOfRooms: '1',
+      largeOpsCount: '2',
+      largeOpsHours: '5',
+      largeOpsNurses: '4',
+      mediumOpsCount: '4',
+      mediumOpsHours: '2.5',
+      mediumOpsNurses: '3',
+      smallOpsCount: '4',
+      smallOpsHours: '1',
+      smallOpsNurses: '2',
+      workHours: '7',
+      offDays: '86',
     });
     setResult(null);
     setShowAnalysis(false);
@@ -577,15 +594,19 @@ const OperatingRoomCalculator = () => {
   const smallOpsHoursVal = Number(inputs.smallOpsHours) || 0;
   const smallOpsNursesVal = Number(inputs.smallOpsNurses) || 0;
   const workHoursVal = Number(inputs.workHours) || 0;
-  const correctionVal = Number(inputs.correction) || 0;
-  const numberOfRoomsVal = Number(inputs.numberOfRooms) || 0;
-  
-  const totalLargeOpsHours = largeOpsCountVal * largeOpsHoursVal * largeOpsNursesVal;
-  const totalMediumOpsHours = mediumOpsCountVal * mediumOpsHoursVal * mediumOpsNursesVal;
-  const totalSmallOpsHours = smallOpsCountVal * smallOpsHoursVal * smallOpsNursesVal;
-  const totalNurseHours = (totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours) * numberOfRoomsVal;
+  const offDaysVal = Number(inputs.offDays) || 0;
+
+  const totalLargeOpsHours =
+    largeOpsCountVal * largeOpsHoursVal * largeOpsNursesVal;
+  const totalMediumOpsHours =
+    mediumOpsCountVal * mediumOpsHoursVal * mediumOpsNursesVal;
+  const totalSmallOpsHours =
+    smallOpsCountVal * smallOpsHoursVal * smallOpsNursesVal;
+  const totalNurseHours =
+    totalLargeOpsHours + totalMediumOpsHours + totalSmallOpsHours;
   const baseNurses = workHoursVal > 0 ? totalNurseHours / workHoursVal : 0;
-  const totalNursesWithCorrection = baseNurses * (1 + correctionVal / 100);
+  const lossDayFactor = 365 - offDaysVal > 0 ? 365 / (365 - offDaysVal) : 0;
+  const totalWithCorrection = baseNurses * lossDayFactor;
 
   return (
     <Card>
@@ -623,21 +644,19 @@ const OperatingRoomCalculator = () => {
         </div>
         
         {/* Other Inputs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-           <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+          <div>
             <Label htmlFor="op-work-hours">Jam kerja efektif/hari</Label>
-            <Input id="op-work-hours" type="number" value={inputs.workHours} onChange={e => setInputs(i => ({ ...i, workHours: e.target.value }))} />
+            <Input id="op-work-hours" type="number" value={inputs.workHours} onChange={e => setInputs(i => ({...i, workHours: e.target.value}))} />
           </div>
           <div>
-            <Label htmlFor="op-rooms">Jumlah kamar operasi</Label>
-            <Input id="op-rooms" type="number" value={inputs.numberOfRooms} onChange={e => setInputs(i => ({ ...i, numberOfRooms: e.target.value }))} />
-          </div>
-          <div>
-            <Label htmlFor="op-correction">Faktor Koreksi (%)</Label>
-            <Input id="op-correction" type="number" value={inputs.correction} onChange={e => setInputs(i => ({ ...i, correction: e.target.value }))} />
+            <Label htmlFor="op-off-days">
+              Jumlah hari libur/cuti per tahun
+            </Label>
+            <Input id="op-off-days" type="number" value={inputs.offDays} onChange={e => setInputs(i => ({...i, offDays: e.target.value}))} />
           </div>
         </div>
-         
+
         <div className="flex gap-2 pt-2">
           <Button onClick={handleCalculate} className="w-full">
             <Calculator />
@@ -648,28 +667,51 @@ const OperatingRoomCalculator = () => {
             Reset
           </Button>
         </div>
-         {showAnalysis && result && workHoursVal > 0 && (
+        {showAnalysis &&
+          result &&
+          workHoursVal > 0 &&
+          365 - offDaysVal > 0 && (
             <div className="mt-4 p-4 border rounded-lg bg-background text-sm space-y-2">
-                <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
-                <p className="text-muted-foreground">
-                    1. Total Jam-Perawat/hari: <br/>
-                    <span className="font-mono text-foreground text-xs block pl-2">
-                        Besar: ({largeOpsCountVal}*{largeOpsHoursVal}*{largeOpsNursesVal}) = {totalLargeOpsHours.toFixed(1)} <br/>
-                        Sedang: ({mediumOpsCountVal}*{mediumOpsHoursVal}*{mediumOpsNursesVal}) = {totalMediumOpsHours.toFixed(1)} <br/>
-                        Kecil: ({smallOpsCountVal}*{smallOpsHoursVal}*{smallOpsNursesVal}) = {totalSmallOpsHours.toFixed(1)} <br/>
-                        Subtotal * {numberOfRoomsVal} Kamar = <b>{totalNurseHours.toFixed(1)} jam-perawat</b>
-                    </span>
-                </p>
-                <p className="text-muted-foreground">
-                    2. Kebutuhan Dasar Perawat: <br/>
-                    <span className="font-mono text-foreground text-xs block pl-2">{totalNurseHours.toFixed(1)} jam-perawat / {workHoursVal} jam kerja = <b>{baseNurses.toFixed(2)} perawat</b></span>
-                </p>
-                <p className="text-muted-foreground">
-                    3. Total (dgn koreksi {correctionVal}%): <br/>
-                    <span className="font-mono text-foreground text-xs block pl-2">{baseNurses.toFixed(2)} * (1 + {correctionVal / 100}) = {totalNursesWithCorrection.toFixed(2)} &#x2192; <b>{result.total} perawat</b> (dibulatkan)</span>
-                </p>
+              <h4 className="font-semibold text-primary">
+                Analisa Perhitungan
+              </h4>
+              <p className="text-muted-foreground">
+                1. Total Jam-Perawat/hari: <br />
+                <span className="font-mono text-foreground text-xs block pl-2">
+                  Besar: ({largeOpsCountVal}*{largeOpsHoursVal}*
+                  {largeOpsNursesVal}) = {totalLargeOpsHours.toFixed(1)} <br />
+                  Sedang: ({mediumOpsCountVal}*{mediumOpsHoursVal}*
+                  {mediumOpsNursesVal}) = {totalMediumOpsHours.toFixed(1)}{' '}
+                  <br />
+                  Kecil: ({smallOpsCountVal}*{smallOpsHoursVal}*
+                  {smallOpsNursesVal}) = {totalSmallOpsHours.toFixed(1)} <br />
+                  Total = <b>{totalNurseHours.toFixed(1)} jam-perawat</b>
+                </span>
+              </p>
+              <p className="text-muted-foreground">
+                2. Kebutuhan Dasar Perawat: <br />
+                <span className="font-mono text-foreground text-xs block pl-2">
+                  {totalNurseHours.toFixed(1)} jam-perawat / {workHoursVal} jam
+                  kerja = <b>{baseNurses.toFixed(2)} perawat</b>
+                </span>
+              </p>
+              <p className="text-muted-foreground">
+                3. Faktor Koreksi &quot;Loss Day&quot;: <br />
+                <span className="font-mono text-foreground text-xs block pl-2">
+                  365 / (365 - {offDaysVal}) ={' '}
+                  <b>{lossDayFactor.toFixed(2)}</b>
+                </span>
+              </p>
+              <p className="text-muted-foreground">
+                4. Total Kebutuhan (dgn koreksi): <br />
+                <span className="font-mono text-foreground text-xs block pl-2">
+                  {baseNurses.toFixed(2)} * {lossDayFactor.toFixed(2)} ={' '}
+                  {totalWithCorrection.toFixed(2)} &#x2192;{' '}
+                  <b>{result.total} perawat</b> (dibulatkan)
+                </span>
+              </p>
             </div>
-         )}
+          )}
       </CardContent>
       <CardFooter>
         <ResultDisplay result={result} unit="Perawat" />
