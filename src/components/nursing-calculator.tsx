@@ -72,8 +72,9 @@ const DepkesCalculator = () => {
   const { toast } = useToast();
   const [inputs, setInputs] = useState({
     minimal: '',
-    partial: '',
-    total: '',
+    sedang: '',
+    agakBerat: '',
+    maksimal: '',
     offDays: '86',
   });
   const [result, setResult] = useState<Result | null>(null);
@@ -81,11 +82,12 @@ const DepkesCalculator = () => {
 
   const handleCalculate = () => {
     const minimal = Number(inputs.minimal) || 0;
-    const partial = Number(inputs.partial) || 0;
-    const total = Number(inputs.total) || 0;
+    const sedang = Number(inputs.sedang) || 0;
+    const agakBerat = Number(inputs.agakBerat) || 0;
+    const maksimal = Number(inputs.maksimal) || 0;
     const offDays = Number(inputs.offDays) || 0;
-    
-    const hours = { minimal: 2, partial: 3.7, total: 5.4 };
+
+    const hours = { minimal: 2, sedang: 3.08, agakBerat: 4.15, maksimal: 6.16 };
     const workingHoursPerDay = 7;
     const totalDaysInYear = 365;
     const workingDaysInYear = totalDaysInYear - offDays;
@@ -100,14 +102,14 @@ const DepkesCalculator = () => {
     }
 
     const totalCareHours =
-      minimal * hours.minimal + partial * hours.partial + total * hours.total;
+      minimal * hours.minimal +
+      sedang * hours.sedang +
+      agakBerat * hours.agakBerat +
+      maksimal * hours.maksimal;
 
     const baseNurses = totalCareHours / workingHoursPerDay;
-
     const lossDayCorrectionFactor = totalDaysInYear / workingDaysInYear;
-
     const totalNursesWithCorrection = baseNurses * lossDayCorrectionFactor;
-
     const totalNurses = Math.ceil(totalNursesWithCorrection);
 
     const distribution = { morning: 0.47, afternoon: 0.36, night: 0.17 };
@@ -150,18 +152,19 @@ const DepkesCalculator = () => {
   };
 
   const handleReset = () => {
-    setInputs({ minimal: '', partial: '', total: '', offDays: '86' });
+    setInputs({ minimal: '', sedang: '', agakBerat: '', maksimal: '', offDays: '86' });
     setResult(null);
     setShowAnalysis(false);
   };
 
   const minimalVal = Number(inputs.minimal) || 0;
-  const partialVal = Number(inputs.partial) || 0;
-  const totalVal = Number(inputs.total) || 0;
+  const sedangVal = Number(inputs.sedang) || 0;
+  const agakBeratVal = Number(inputs.agakBerat) || 0;
+  const maksimalVal = Number(inputs.maksimal) || 0;
   const offDaysVal = Number(inputs.offDays) || 0;
   
   const totalCareHours =
-    minimalVal * 2 + partialVal * 3.7 + totalVal * 5.4;
+    minimalVal * 2 + sedangVal * 3.08 + agakBeratVal * 4.15 + maksimalVal * 6.16;
   const baseNurses = totalCareHours / 7;
   const workingDaysInYear = 365 - offDaysVal;
   const lossDayCorrectionFactor =
@@ -171,23 +174,27 @@ const DepkesCalculator = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Metode Depkes RI (2005)</CardTitle>
+        <CardTitle>Metode Depkes RI (Revisi)</CardTitle>
         <CardDescription>
-          Berdasarkan klasifikasi tingkat ketergantungan pasien.
+          Berdasarkan klasifikasi tingkat ketergantungan pasien yang diperbarui.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="depkes-minimal">Pasien Askep Minimal</Label>
+          <Label htmlFor="depkes-minimal">Pasien Asuhan Keperawatan Minimal</Label>
           <Input id="depkes-minimal" type="number" placeholder="0" value={inputs.minimal} onChange={e => setInputs(i => ({ ...i, minimal: e.target.value }))} />
         </div>
         <div>
-          <Label htmlFor="depkes-partial">Pasien Askep Parsial</Label>
-          <Input id="depkes-partial" type="number" placeholder="0" value={inputs.partial} onChange={e => setInputs(i => ({ ...i, partial: e.target.value }))} />
+          <Label htmlFor="depkes-sedang">Pasien Asuhan Keperawatan Sedang</Label>
+          <Input id="depkes-sedang" type="number" placeholder="0" value={inputs.sedang} onChange={e => setInputs(i => ({ ...i, sedang: e.target.value }))} />
         </div>
         <div>
-          <Label htmlFor="depkes-total">Pasien Askep Total</Label>
-          <Input id="depkes-total" type="number" placeholder="0" value={inputs.total} onChange={e => setInputs(i => ({ ...i, total: e.target.value }))} />
+          <Label htmlFor="depkes-agak-berat">Pasien Asuhan Keperawatan Agak Berat</Label>
+          <Input id="depkes-agak-berat" type="number" placeholder="0" value={inputs.agakBerat} onChange={e => setInputs(i => ({ ...i, agakBerat: e.target.value }))} />
+        </div>
+         <div>
+          <Label htmlFor="depkes-maksimal">Pasien Asuhan Keperawatan Maksimal</Label>
+          <Input id="depkes-maksimal" type="number" placeholder="0" value={inputs.maksimal} onChange={e => setInputs(i => ({ ...i, maksimal: e.target.value }))} />
         </div>
         <div>
           <Label htmlFor="depkes-off-days">Jumlah Hari Libur/Cuti per Tahun</Label>
@@ -205,7 +212,7 @@ const DepkesCalculator = () => {
                 <h4 className="font-semibold text-primary">Analisa Perhitungan</h4>
                  <p className="text-muted-foreground">
                    1. Total Jam Perawatan: <br/>
-                   <span className="font-mono text-foreground text-xs block pl-2">({minimalVal} * 2) + ({partialVal} * 3.7) + ({totalVal} * 5.4) = <b>{totalCareHours.toFixed(2)} jam</b></span>
+                   <span className="font-mono text-foreground text-xs block pl-2">({minimalVal}*2) + ({sedangVal}*3.08) + ({agakBeratVal}*4.15) + ({maksimalVal}*6.16) = <b>{totalCareHours.toFixed(2)} jam</b></span>
                  </p>
                  <p className="text-muted-foreground">
                    2. Kebutuhan Dasar Perawat: <br/>
