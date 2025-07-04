@@ -468,7 +468,7 @@ export function ShiftScheduleForm({
                   <FormDescription className="text-xs !mt-0">
                     Set the number of employees required for each shift.
                   </FormDescription>
-                  <div className="grid grid-cols-3 gap-4 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <FormField
                       control={form.control}
                       name="employeesPerShift.morning"
