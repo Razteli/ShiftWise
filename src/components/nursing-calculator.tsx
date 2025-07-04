@@ -939,7 +939,7 @@ export function NursingCalculator() {
         </p>
       </div>
       <Tabs defaultValue="depkes" className="w-full max-w-2xl mx-auto">
-        <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-4">
+        <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-4">
           <TabsTrigger value="depkes">Depkes RI</TabsTrigger>
           <TabsTrigger value="douglas">Douglas</TabsTrigger>
           <TabsTrigger value="gillies">Gillies</TabsTrigger>

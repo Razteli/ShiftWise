@@ -46,7 +46,7 @@ export default function Home() {
 
       <main className="container mx-auto p-4 md:p-8 flex-grow">
         <Tabs defaultValue="scheduler" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-8 max-w-2xl mx-auto">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto mb-8 max-w-2xl mx-auto">
             <TabsTrigger value="scheduler">AI Shift Scheduler</TabsTrigger>
             <TabsTrigger value="analyzer">Analisis Jadwal</TabsTrigger>
             <TabsTrigger value="calculator">Kalkulator Perawat</TabsTrigger>
