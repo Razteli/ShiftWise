@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className={cn('antialiased', inter.className)} suppressHydrationWarning>
         {children}
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
