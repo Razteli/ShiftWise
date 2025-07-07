@@ -170,6 +170,61 @@ const DepkesCalculator = () => {
             Total hari non-kerja perawat (Contoh: 128 hari = 52x2 akhir pekan + 12 cuti + 12 hari libur nasional).
           </p>
         </div>
+        <Accordion type="single" collapsible className="w-full pt-2">
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="text-sm font-normal py-2">
+              Lihat Petunjuk Kriteria Klasifikasi Pasien
+            </AccordionTrigger>
+            <AccordionContent>
+              <p className="text-xs text-muted-foreground pb-2">
+                Gunakan tabel referensi ini untuk membantu menentukan jumlah
+                pasien di setiap kategori.
+              </p>
+              <Table className="text-xs border">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Klasifikasi</TableHead>
+                    <TableHead>Kriteria Pasien</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Minimal</TableCell>
+                    <TableCell>
+                      Pasien bisa melakukan perawatan diri (makan, minum,
+                      kebersihan) secara mandiri atau dengan sedikit bantuan.
+                      Ambulasi dengan pengawasan. Observasi TTV setiap shift.
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Sedang</TableCell>
+                    <TableCell>
+                      Pasien memerlukan bantuan sedang untuk aktivitas harian.
+                      Terpasang infus atau drain. Ambulasi dibantu. Observasi
+                      TTV setiap 4 jam.
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Agak Berat</TableCell>
+                    <TableCell>
+                      Pasien memerlukan bantuan penuh untuk aktivitas harian.
+                      Kesadaran bisa menurun atau gelisah. Terpasang kateter
+                      urin atau NGT. Observasi TTV setiap 2-4 jam.
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Maksimal</TableCell>
+                    <TableCell>
+                      Pasien dalam kondisi kritis dan sangat bergantung pada
+                      perawat. Seringkali tidak sadar atau menggunakan alat bantu
+                      hidup (ventilator). Observasi TTV &lt; 2 jam sekali.
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
         <div className="flex gap-2 pt-2">
            <Button onClick={handleCalculate} className="w-full"><Calculator />Hitung</Button>
            <Button onClick={handleReset} variant="outline" className="w-full"><RotateCcw/>Reset</Button>
