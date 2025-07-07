@@ -34,7 +34,7 @@ const SuggestShiftScheduleInputSchema = z.object({
   monthlyOffDays: z
     .number()
     .optional()
-    .describe('The minimum number of off days per employee in a month.'),
+    .describe('The maximum number of off days per employee in a month.'),
   customRule: z
     .string()
     .optional()
@@ -79,7 +79,7 @@ ATURAN PALING PENTING (HARUS DIPATUHI):
 3.  **KESEIMBANGAN**: Sebisa mungkin, berikan jumlah total shift ('Pagi', 'Siang', 'Malam') dan hari 'Libur' yang merata untuk semua karyawan 'active'.
 
 {{#if monthlyOffDays}}
-4.  **HARI LIBUR MINIMAL**: Setiap karyawan 'active' harus mendapatkan minimal {{monthlyOffDays}} hari 'Libur' selama periode jadwal ini.
+4.  **HARI LIBUR MAKSIMAL**: Setiap karyawan 'active' harus mendapatkan maksimal {{monthlyOffDays}} hari 'Libur' selama periode jadwal ini. Jangan berikan lebih dari jumlah ini.
 {{/if}}
 
 {{#if customRule}}

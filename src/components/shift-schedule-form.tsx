@@ -647,7 +647,7 @@ export function ShiftScheduleForm({
                   name="monthlyOffDays"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Jumlah Hari Libur per Bulan</FormLabel>
+                      <FormLabel>Jumlah Maksimal Hari Libur per Bulan</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -657,7 +657,7 @@ export function ShiftScheduleForm({
                         />
                       </FormControl>
                       <FormDescription>
-                        Atur jumlah minimal hari libur yang harus diterima setiap karyawan dalam sebulan.
+                        Atur jumlah maksimal hari libur yang dapat diterima setiap karyawan dalam sebulan.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

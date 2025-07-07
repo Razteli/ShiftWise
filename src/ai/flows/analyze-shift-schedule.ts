@@ -29,7 +29,7 @@ const AnalyzeShiftScheduleInputSchema = z.object({
   monthlyOffDays: z
     .number()
     .optional()
-    .describe('The minimum number of off days per employee in a month.'),
+    .describe('The maximum number of off days per employee in a month.'),
   customRule: z
     .string()
     .optional()
@@ -64,7 +64,7 @@ Analisis Anda harus memeriksa:
 2. Keseimbangan beban kerja antar karyawan.
 
 {{#if monthlyOffDays}}
-3. Jumlah hari libur minimum: Setiap karyawan harus memiliki setidaknya {{monthlyOffDays}} hari libur. Periksa apakah aturan ini terpenuhi.
+3. Jumlah hari libur maksimum: Setiap karyawan tidak boleh memiliki lebih dari {{monthlyOffDays}} hari libur. Periksa apakah aturan ini terpenuhi.
 {{/if}}
 
 {{#if customRule}}
