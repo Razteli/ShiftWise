@@ -10,6 +10,7 @@ import type { ScheduleConfig } from '@/lib/schemas';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NursingCalculator } from '@/components/nursing-calculator';
 import { ScheduleAnalyzer } from '@/components/schedule-analyzer';
+import { Badge } from '@/components/ui/badge';
 
 export default function Home({
   params,
@@ -36,7 +37,15 @@ export default function Home({
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo className="h-7 w-7 text-primary" />
-            <h1 className="text-xl font-bold tracking-tight">ShiftWise</h1>
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-xl font-bold tracking-tight">ShiftWise</h1>
+              <Badge
+                variant="outline"
+                className="font-normal text-primary border-primary/50"
+              >
+                beta
+              </Badge>
+            </div>
           </div>
           <a
             href="https://github.com/firebase/firebase-genkit-samples/tree/main/nextjs-pro"
