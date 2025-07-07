@@ -66,10 +66,10 @@ const SHIFT_OPTIONS = ['Pagi', 'Siang', 'Malam', 'Libur'];
 
 const getShiftBadgeVariant = (
   shift: string
-): 'default' | 'secondary' | 'outline' | 'destructive' => {
+): 'default' | 'secondary' | 'outline' | 'destructive' | 'accent' => {
   const lowerShift = shift.toLowerCase().trim();
   if (lowerShift.includes('pagi')) return 'default';
-  if (lowerShift.includes('siang')) return 'secondary';
+  if (lowerShift.includes('siang')) return 'accent';
   if (lowerShift.includes('malam')) return 'destructive';
   if (lowerShift.includes('libur')) return 'outline';
   return 'secondary';
@@ -204,7 +204,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
           if (cellText.includes('pagi')) {
             fillColor = [63, 81, 181]; // Primary color (blue-ish)
           } else if (cellText.includes('siang')) {
-            fillColor = [250, 235, 215]; // A light orange/peach color for secondary
+            fillColor = [255, 191, 0]; // Yellow color
           } else if (cellText.includes('malam')) {
             fillColor = [220, 53, 69]; // Destructive color (red)
           } else if (cellText.includes('libur')) {
@@ -233,7 +233,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
 
     const legendItems = [
       { text: 'Pagi', color: [63, 81, 181] },
-      { text: 'Siang', color: [250, 235, 215] },
+      { text: 'Siang', color: [255, 191, 0] },
       { text: 'Malam', color: [220, 53, 69] },
       { text: 'Libur', color: [248, 249, 250] },
     ];
