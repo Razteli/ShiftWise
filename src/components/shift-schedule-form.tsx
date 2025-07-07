@@ -277,6 +277,7 @@ export function ShiftScheduleForm({
                   <Table>
                     <TableHeader className="sticky top-0 z-10 bg-card">
                       <TableRow>
+                        <TableHead className="w-10 text-center">No.</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Level</TableHead>
                         <TableHead>Status</TableHead>
@@ -290,6 +291,7 @@ export function ShiftScheduleForm({
                         const liburDiJadwal = offDayCounts.get(field.name) ?? 0;
                         return (
                           <TableRow key={field.id}>
+                            <TableCell className="text-center">{index + 1}</TableCell>
                             <TableCell className="font-medium">
                               {field.name}
                             </TableCell>
