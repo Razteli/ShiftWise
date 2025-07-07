@@ -80,7 +80,7 @@ const defaultEmployee: Employee = {
   name: '',
   level: 'junior',
   status: 'active',
-  annualLeave: 12,
+  remainingLeave: 12,
 };
 
 const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v3';
@@ -109,11 +109,11 @@ export function ShiftScheduleForm({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
       employees: [
-        { name: 'Alice', level: 'senior', status: 'active', annualLeave: 12 },
-        { name: 'Bob', level: 'intermediate', status: 'active', annualLeave: 12 },
-        { name: 'Charlie', level: 'intermediate', status: 'active', annualLeave: 12 },
-        { name: 'David', level: 'junior', status: 'active', annualLeave: 12 },
-        { name: 'Eve', level: 'junior', status: 'on_leave', annualLeave: 12 },
+        { name: 'Alice', level: 'senior', status: 'active', remainingLeave: 12 },
+        { name: 'Bob', level: 'intermediate', status: 'active', remainingLeave: 12 },
+        { name: 'Charlie', level: 'intermediate', status: 'active', remainingLeave: 12 },
+        { name: 'David', level: 'junior', status: 'active', remainingLeave: 12 },
+        { name: 'Eve', level: 'junior', status: 'on_leave', remainingLeave: 12 },
       ],
       employeesPerShift: {
         morning: 1,
@@ -280,19 +280,14 @@ export function ShiftScheduleForm({
                         <TableHead>Name</TableHead>
                         <TableHead>Level</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Cuti Tahunan</TableHead>
+                        <TableHead>Sisa Cuti</TableHead>
                         <TableHead>Libur (Jadwal)</TableHead>
-                        <TableHead>Sisa Libur</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {fields.map((field, index) => {
                         const liburDiJadwal = offDayCounts.get(field.name) ?? 0;
-                        const sisaLibur =
-                          field.annualLeave != null
-                            ? field.annualLeave - liburDiJadwal
-                            : '-';
                         return (
                           <TableRow key={field.id}>
                             <TableCell className="font-medium">
@@ -314,15 +309,12 @@ export function ShiftScheduleForm({
                               </Badge>
                             </TableCell>
                             <TableCell className="text-center">
-                              {field.annualLeave ?? '-'}
+                              {field.remainingLeave ?? '-'}
                             </TableCell>
                             <TableCell className="text-center">
                               {offDayCounts.has(field.name)
                                 ? liburDiJadwal
                                 : '-'}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {sisaLibur}
                             </TableCell>
                             <TableCell className="text-right">
                               <Button
@@ -464,18 +456,18 @@ export function ShiftScheduleForm({
                   </div>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="annualLeave" className="text-right">
-                    Cuti Tahunan
+                  <Label htmlFor="remainingLeave" className="text-right">
+                    Sisa Cuti
                   </Label>
                   <div className="col-span-3">
                     <Input
-                      id="annualLeave"
+                      id="remainingLeave"
                       type="number"
-                      value={currentEmployee.annualLeave ?? ''}
+                      value={currentEmployee.remainingLeave ?? ''}
                       onChange={e =>
                         setCurrentEmployee({
                           ...currentEmployee,
-                          annualLeave:
+                          remainingLeave:
                             e.target.value === ''
                               ? undefined
                               : Number(e.target.value),
@@ -484,9 +476,9 @@ export function ShiftScheduleForm({
                       className="w-full"
                       placeholder="Contoh: 12"
                     />
-                    {dialogErrors.annualLeave && (
+                    {dialogErrors.remainingLeave && (
                       <p className="text-sm text-destructive mt-1">
-                        {dialogErrors.annualLeave}
+                        {dialogErrors.remainingLeave}
                       </p>
                     )}
                   </div>
