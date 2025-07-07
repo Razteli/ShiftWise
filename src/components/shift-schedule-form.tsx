@@ -76,14 +76,12 @@ interface ShiftScheduleFormProps {
   schedule: string | null;
 }
 
-const defaultEmployee: Employee = {
-  name: '',
-  level: 'junior',
+const defaultEmployee: Omit<Employee, 'name'> = {
   status: 'active',
   remainingLeave: 12,
 };
 
-const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v3';
+const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v4';
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
@@ -96,7 +94,7 @@ export function ShiftScheduleForm({
     number | null
   >(null);
   const [currentEmployee, setCurrentEmployee] =
-    useState<Employee>(defaultEmployee);
+    useState<Partial<Employee>>(defaultEmployee);
   const [dialogErrors, setDialogErrors] = useState<Partial<Employee>>({});
 
   const statusMap: Record<Employee['status'], string> = {
@@ -109,11 +107,11 @@ export function ShiftScheduleForm({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
       employees: [
-        { name: 'Alice', level: 'senior', status: 'active', remainingLeave: 12 },
-        { name: 'Bob', level: 'intermediate', status: 'active', remainingLeave: 12 },
-        { name: 'Charlie', level: 'intermediate', status: 'active', remainingLeave: 12 },
-        { name: 'David', level: 'junior', status: 'active', remainingLeave: 12 },
-        { name: 'Eve', level: 'junior', status: 'on_leave', remainingLeave: 12 },
+        { name: 'Alice', status: 'active', remainingLeave: 12 },
+        { name: 'Bob', status: 'active', remainingLeave: 12 },
+        { name: 'Charlie', status: 'active', remainingLeave: 12 },
+        { name: 'David', status: 'active', remainingLeave: 12 },
+        { name: 'Eve', status: 'on_leave', remainingLeave: 12 },
       ],
       employeesPerShift: {
         morning: 1,
@@ -208,7 +206,7 @@ export function ShiftScheduleForm({
 
   const handleAddNewEmployee = () => {
     setEditingEmployeeIndex(null);
-    setCurrentEmployee(defaultEmployee);
+    setCurrentEmployee({ name: '', ...defaultEmployee });
     setDialogErrors({});
     setEmployeeDialogOpen(true);
   };
@@ -279,7 +277,6 @@ export function ShiftScheduleForm({
                       <TableRow>
                         <TableHead className="w-10 text-center">No.</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Level</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Sisa Cuti</TableHead>
                         <TableHead>Libur (Jadwal)</TableHead>
@@ -294,9 +291,6 @@ export function ShiftScheduleForm({
                             <TableCell className="text-center">{index + 1}</TableCell>
                             <TableCell className="font-medium">
                               {field.name}
-                            </TableCell>
-                            <TableCell className="capitalize">
-                              {field.level}
                             </TableCell>
                             <TableCell>
                               <Badge
@@ -397,35 +391,6 @@ export function ShiftScheduleForm({
                     {dialogErrors.name && (
                       <p className="text-sm text-destructive mt-1">
                         {dialogErrors.name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="level" className="text-right">
-                    Level
-                  </Label>
-                  <div className="col-span-3">
-                    <Select
-                      value={currentEmployee.level}
-                      onValueChange={(value: Employee['level']) =>
-                        setCurrentEmployee({ ...currentEmployee, level: value })
-                      }
-                    >
-                      <SelectTrigger id="level">
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="junior">Junior</SelectItem>
-                        <SelectItem value="intermediate">
-                          Intermediate
-                        </SelectItem>
-                        <SelectItem value="senior">Senior</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {dialogErrors.level && (
-                      <p className="text-sm text-destructive mt-1">
-                        {dialogErrors.level}
                       </p>
                     )}
                   </div>

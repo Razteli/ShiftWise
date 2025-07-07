@@ -19,7 +19,7 @@ const AnalyzeShiftScheduleInputSchema = z.object({
   employees: z
     .string()
     .describe(
-      'A JSON string representing the list of employees, including their name, status, and level.'
+      'A JSON string representing the list of employees, including their name and status.'
     ),
   employeesPerShift: z
     .string()
@@ -53,7 +53,7 @@ const analyzeShiftSchedulePrompt = ai.definePrompt({
   name: 'analyzeShiftSchedulePrompt',
   input: {schema: AnalyzeShiftScheduleInputSchema},
   output: {schema: AnalyzeShiftScheduleOutputSchema},
-  prompt: `Anda adalah seorang analis jadwal shift. Analisis jadwal shift yang dibuat dan identifikasi potensi masalah seperti kelebihan beban karyawan, kekurangan atau kelebihan staf selama shift, dan distribusi beban kerja yang tidak adil berdasarkan level karyawan (junior, intermediate, senior). Berikan saran untuk menyelesaikan masalah ini.
+  prompt: `Anda adalah seorang analis jadwal shift. Analisis jadwal shift yang dibuat dan identifikasi potensi masalah seperti kelebihan beban karyawan, kekurangan atau kelebihan staf selama shift, dan distribusi beban kerja yang tidak adil. Berikan saran untuk menyelesaikan masalah ini.
 
 Jadwal Shift yang Dihasilkan: {{{schedule}}}
 Karyawan (JSON): {{{employees}}}
