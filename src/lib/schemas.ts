@@ -4,6 +4,7 @@ export const employeeSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
   status: z.enum(['active', 'on_leave', 'day_off']),
   level: z.enum(['junior', 'intermediate', 'senior']),
+  annualLeave: z.coerce.number().int().min(0, 'Must be 0 or more.').optional(),
 });
 
 export type Employee = z.infer<typeof employeeSchema>;

@@ -80,6 +80,7 @@ const defaultEmployee: Employee = {
   name: '',
   level: 'junior',
   status: 'active',
+  annualLeave: 12,
 };
 
 const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v3';
@@ -108,11 +109,11 @@ export function ShiftScheduleForm({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
       employees: [
-        { name: 'Alice', level: 'senior', status: 'active' },
-        { name: 'Bob', level: 'intermediate', status: 'active' },
-        { name: 'Charlie', level: 'intermediate', status: 'active' },
-        { name: 'David', level: 'junior', status: 'active' },
-        { name: 'Eve', level: 'junior', status: 'on_leave' },
+        { name: 'Alice', level: 'senior', status: 'active', annualLeave: 12 },
+        { name: 'Bob', level: 'intermediate', status: 'active', annualLeave: 12 },
+        { name: 'Charlie', level: 'intermediate', status: 'active', annualLeave: 12 },
+        { name: 'David', level: 'junior', status: 'active', annualLeave: 12 },
+        { name: 'Eve', level: 'junior', status: 'on_leave', annualLeave: 12 },
       ],
       employeesPerShift: {
         morning: 1,
@@ -279,56 +280,73 @@ export function ShiftScheduleForm({
                         <TableHead>Name</TableHead>
                         <TableHead>Level</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Jumlah Libur</TableHead>
+                        <TableHead>Cuti Tahunan</TableHead>
+                        <TableHead>Libur (Jadwal)</TableHead>
+                        <TableHead>Sisa Libur</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {fields.map((field, index) => (
-                        <TableRow key={field.id}>
-                          <TableCell className="font-medium">
-                            {field.name}
-                          </TableCell>
-                          <TableCell className="capitalize">
-                            {field.level}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={
-                                field.status === 'active'
-                                  ? 'secondary'
-                                  : 'outline'
-                              }
-                              className="capitalize"
-                            >
-                              {statusMap[field.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {offDayCounts.get(field.name) ?? '-'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditEmployee(index)}
-                              className="h-8 w-8"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => remove(index)}
-                              className="h-8 w-8 text-destructive/80 hover:text-destructive"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {fields.map((field, index) => {
+                        const liburDiJadwal = offDayCounts.get(field.name) ?? 0;
+                        const sisaLibur =
+                          field.annualLeave != null
+                            ? field.annualLeave - liburDiJadwal
+                            : '-';
+                        return (
+                          <TableRow key={field.id}>
+                            <TableCell className="font-medium">
+                              {field.name}
+                            </TableCell>
+                            <TableCell className="capitalize">
+                              {field.level}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  field.status === 'active'
+                                    ? 'secondary'
+                                    : 'outline'
+                                }
+                                className="capitalize"
+                              >
+                                {statusMap[field.status]}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {field.annualLeave ?? '-'}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {offDayCounts.has(field.name)
+                                ? liburDiJadwal
+                                : '-'}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {sisaLibur}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditEmployee(index)}
+                                className="h-8 w-8"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => remove(index)}
+                                className="h-8 w-8 text-destructive/80 hover:text-destructive"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -441,6 +459,34 @@ export function ShiftScheduleForm({
                     {dialogErrors.status && (
                       <p className="text-sm text-destructive mt-1">
                         {dialogErrors.status}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="annualLeave" className="text-right">
+                    Cuti Tahunan
+                  </Label>
+                  <div className="col-span-3">
+                    <Input
+                      id="annualLeave"
+                      type="number"
+                      value={currentEmployee.annualLeave ?? ''}
+                      onChange={e =>
+                        setCurrentEmployee({
+                          ...currentEmployee,
+                          annualLeave:
+                            e.target.value === ''
+                              ? undefined
+                              : Number(e.target.value),
+                        })
+                      }
+                      className="w-full"
+                      placeholder="Contoh: 12"
+                    />
+                    {dialogErrors.annualLeave && (
+                      <p className="text-sm text-destructive mt-1">
+                        {dialogErrors.annualLeave}
                       </p>
                     )}
                   </div>
