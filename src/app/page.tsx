@@ -11,7 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NursingCalculator } from '@/components/nursing-calculator';
 import { ScheduleAnalyzer } from '@/components/schedule-analyzer';
 
-export default function Home() {
+export default function Home({
+  params,
+  searchParams,
+}: {
+  params: {};
+  searchParams: {};
+}) {
   const [scheduleData, setScheduleData] = useState<{
     result: ScheduleResult;
     config: ScheduleConfig;
