@@ -112,41 +112,8 @@ const DepkesCalculator = () => {
     const totalNursesWithCorrection = baseNurses * lossDayCorrectionFactor;
     const totalNurses = Math.ceil(totalNursesWithCorrection);
 
-    const distribution = { morning: 0.47, afternoon: 0.36, night: 0.17 };
-    
-    const morningRaw = totalNurses * distribution.morning;
-    const afternoonRaw = totalNurses * distribution.afternoon;
-    const nightRaw = totalNurses * distribution.night;
-
-    const morningFloor = Math.floor(morningRaw);
-    const afternoonFloor = Math.floor(afternoonRaw);
-    const nightFloor = Math.floor(nightRaw);
-
-    let remainderToDistribute = totalNurses - (morningFloor + afternoonFloor + nightFloor);
-
-    const remainders = [
-      { name: 'morning' as const, value: morningRaw - morningFloor },
-      { name: 'afternoon' as const, value: afternoonRaw - afternoonFloor },
-      { name: 'night' as const, value: nightRaw - nightFloor },
-    ];
-    
-    remainders.sort((a, b) => b.value - a.value);
-
-    const shiftDistribution = {
-      morning: morningFloor,
-      afternoon: afternoonFloor,
-      night: nightFloor,
-    };
-
-    for (let i = 0; i < remainderToDistribute; i++) {
-      shiftDistribution[remainders[i].name]++;
-    }
-
     setResult({
       total: totalNurses,
-      morning: shiftDistribution.morning,
-      afternoon: shiftDistribution.afternoon,
-      night: shiftDistribution.night,
     });
     setShowAnalysis(true);
   };
