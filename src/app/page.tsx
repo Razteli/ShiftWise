@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NursingCalculator } from '@/components/nursing-calculator';
 import { ScheduleAnalyzer } from '@/components/schedule-analyzer';
 import { Badge } from '@/components/ui/badge';
+import { ManualScheduler } from '@/components/manual-scheduler';
 
 export default function Home({
   params,
@@ -61,8 +62,9 @@ export default function Home({
 
       <main className="container mx-auto p-4 md:p-8 flex-grow">
         <Tabs defaultValue="scheduler" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto mb-8 max-w-2xl mx-auto">
-            <TabsTrigger value="scheduler">AI Shift Scheduler</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto mb-8 max-w-3xl mx-auto">
+            <TabsTrigger value="scheduler">AI Scheduler</TabsTrigger>
+            <TabsTrigger value="manual">Jadwal Manual</TabsTrigger>
             <TabsTrigger value="analyzer">Analisis Jadwal</TabsTrigger>
             <TabsTrigger value="calculator">Kalkulator Perawat</TabsTrigger>
           </TabsList>
@@ -90,6 +92,9 @@ export default function Home({
                 />
               </div>
             </div>
+          </TabsContent>
+           <TabsContent value="manual">
+            <ManualScheduler />
           </TabsContent>
           <TabsContent value="analyzer">
             <ScheduleAnalyzer />
