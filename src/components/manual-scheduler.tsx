@@ -121,9 +121,9 @@ export function ManualScheduler() {
     resolver: zodResolver(manualScheduleSchema),
     defaultValues: {
       employees: [
-        { name: 'Karyawan 1', status: 'active', remainingLeave: 0 },
-        { name: 'Karyawan 2', status: 'active', remainingLeave: 0 },
-        { name: 'Karyawan 3', status: 'active', remainingLeave: 0 },
+        { name: 'Karyawan 1', status: 'active', remainingLeave: 12 },
+        { name: 'Karyawan 2', status: 'active', remainingLeave: 12 },
+        { name: 'Karyawan 3', status: 'active', remainingLeave: 12 },
       ],
       startDate: new Date(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 6)),
@@ -139,6 +139,21 @@ export function ManualScheduler() {
   const employees = watch('employees');
   const startDate = watch('startDate');
   const endDate = watch('endDate');
+
+  const offDayCounts = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    if (!scheduleData || !employees) return counts;
+
+    scheduleData.rows.forEach((row, index) => {
+      const employeeName = row[0];
+      if (employeeName) {
+        const offDays = row.slice(1).filter(cell => cell.toLowerCase() === 'libur').length;
+        counts.set(employeeName, offDays);
+      }
+    });
+
+    return counts;
+  }, [scheduleData, employees]);
 
 
   React.useEffect(() => {
@@ -176,7 +191,10 @@ export function ManualScheduler() {
 
 
   React.useEffect(() => {
-    if (!startDate || !endDate) return;
+    if (!startDate || !endDate || !form.formState.isValid) {
+      setScheduleData(null);
+      return;
+    }
     const numberOfDays = differenceInDays(endDate, startDate) + 1;
     if (numberOfDays <= 0 || employees.length === 0) {
       setScheduleData(null);
@@ -187,11 +205,11 @@ export function ManualScheduler() {
     const rows = employees.map(emp => [emp.name, ...Array(numberOfDays).fill(DEFAULT_SHIFT)]);
     setScheduleData({ headers, rows });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [employees, startDate, endDate]);
+  }, [JSON.stringify(employees), startDate, endDate, form.formState.isValid]);
 
   const handleAddNewEmployee = () => {
     setEditingEmployeeIndex(null);
-    setCurrentEmployee({ name: '', status: 'active', remainingLeave: 0 });
+    setCurrentEmployee({ name: '', status: 'active', remainingLeave: 12 });
     setDialogErrors({});
     setEmployeeDialogOpen(true);
   };
@@ -308,6 +326,8 @@ export function ManualScheduler() {
                                 <TableRow>
                                     <TableHead>Nama</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Sisa Cuti</TableHead>
+                                    <TableHead>Jml. Libur</TableHead>
                                     <TableHead className="text-right">Aksi</TableHead>
                                 </TableRow>
                                 </TableHeader>
@@ -316,6 +336,8 @@ export function ManualScheduler() {
                                     <TableRow key={field.id}>
                                     <TableCell className="font-medium">{field.name}</TableCell>
                                     <TableCell><Badge variant={field.status === 'active' ? 'secondary' : 'outline'} className="capitalize">{statusMap[field.status]}</Badge></TableCell>
+                                    <TableCell className="text-center">{field.remainingLeave ?? '-'}</TableCell>
+                                    <TableCell className="text-center">{offDayCounts.get(field.name) ?? '-'}</TableCell>
                                     <TableCell className="text-right">
                                         <Button type="button" variant="ghost" size="icon" onClick={() => handleEditEmployee(index)} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button>
                                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8 text-destructive/80 hover:text-destructive"><Trash className="h-4 w-4" /></Button>
@@ -363,6 +385,9 @@ export function ManualScheduler() {
                 <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>{editingEmployeeIndex !== null ? 'Edit Karyawan' : 'Tambah Karyawan'}</DialogTitle>
+                    <DialogDescription>
+                        Masukkan detail karyawan di sini. Klik simpan jika sudah selesai.
+                    </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="name" className="text-right">Nama</Label>
@@ -375,6 +400,33 @@ export function ManualScheduler() {
                         <SelectContent><SelectItem value="active">Aktif</SelectItem><SelectItem value="on_leave">Cuti</SelectItem><SelectItem value="day_off">Libur</SelectItem></SelectContent>
                         </Select>{dialogErrors.status && <p className="text-sm text-destructive mt-1">{dialogErrors.status}</p>}
                     </div>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="remainingLeave" className="text-right">
+                        Sisa Cuti
+                      </Label>
+                      <div className="col-span-3">
+                        <Input
+                          id="remainingLeave"
+                          type="number"
+                          value={currentEmployee.remainingLeave ?? ''}
+                          onChange={(e) =>
+                            setCurrentEmployee({
+                              ...currentEmployee,
+                              remainingLeave:
+                                e.target.value === ''
+                                  ? undefined
+                                  : Number(e.target.value),
+                            })
+                          }
+                          placeholder="Contoh: 12"
+                        />
+                        {dialogErrors.remainingLeave && (
+                          <p className="text-sm text-destructive mt-1">
+                            {dialogErrors.remainingLeave}
+                          </p>
+                        )}
+                      </div>
                     </div>
                 </div>
                 <DialogFooter><Button type="button" onClick={handleSaveEmployee}>Simpan</Button></DialogFooter>
