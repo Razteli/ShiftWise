@@ -402,7 +402,7 @@ export function ManualScheduler() {
                             <TableHeader>
                             <TableRow>
                                 {scheduleData.headers.map((header, index) => (
-                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2', index === 0 ? 'sticky left-0 z-10 font-medium' : 'text-center')}>{header}</TableHead>
+                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 z-10', index === 0 ? 'sticky left-0 font-medium' : 'text-center')}>{header}</TableHead>
                                 ))}
                             </TableRow>
                             </TableHeader>
