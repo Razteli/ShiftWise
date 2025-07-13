@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -399,10 +400,12 @@ export function ManualScheduler() {
                     {scheduleData ? (
                         <div className="relative w-full overflow-auto rounded-md border" style={{ maxHeight: '70vh' }}>
                         <Table>
-                            <TableHeader>
+                            <TableHeader className="sticky top-0 z-20">
                             <TableRow>
                                 {scheduleData.headers.map((header, index) => (
-                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 z-10', index === 0 ? 'sticky left-0 font-medium' : 'text-center')}>{header}</TableHead>
+                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 border-b border-r', index === 0 ? 'sticky left-0 z-10 font-medium' : 'text-center')}>
+                                    {header}
+                                </TableHead>
                                 ))}
                             </TableRow>
                             </TableHeader>
@@ -410,7 +413,7 @@ export function ManualScheduler() {
                             {scheduleData.rows.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                 {row.map((cell, cellIndex) => (
-                                    <TableCell key={cellIndex} className={cn('p-0', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium' : 'text-center')}>
+                                    <TableCell key={cellIndex} className={cn('p-0 border-r', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium' : 'text-center')}>
                                     {cellIndex === 0 ? ( <span className="whitespace-nowrap">{cell}</span> ) : (
                                         <Popover open={openPopoverMap[`${rowIndex}-${cellIndex}`]} onOpenChange={isOpen => setOpenPopoverMap(p => ({ ...p, [`${rowIndex}-${cellIndex}`]: isOpen }))}>
                                         <PopoverTrigger asChild>
