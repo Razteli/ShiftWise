@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Card,
@@ -129,19 +129,12 @@ export function ManualScheduler() {
     },
   });
   
-  const { fields, append, remove, update } = React.useMemo(() => ({
-    fields: form.watch('employees'),
-    append: (emp: Employee) => form.setValue('employees', [...form.getValues('employees'), emp]),
-    remove: (index: number) => form.setValue('employees', form.getValues('employees').filter((_, i) => i !== index)),
-    update: (index: number, emp: Employee) => {
-        const emps = form.getValues('employees');
-        emps[index] = emp;
-        form.setValue('employees', emps);
-        form.setValue('employees', emps);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [form.watch('employees')]);
+  const { fields, append, remove, update } = useFieldArray({
+    control: form.control,
+    name: 'employees',
+  });
 
+  const employees = form.watch('employees');
 
   React.useEffect(() => {
     try {
@@ -178,7 +171,7 @@ export function ManualScheduler() {
 
 
   React.useEffect(() => {
-    const { employees, startDate, endDate } = form.getValues();
+    const { startDate, endDate } = form.getValues();
     if (!startDate || !endDate) return;
     const numberOfDays = differenceInDays(endDate, startDate) + 1;
     if (numberOfDays <= 0 || employees.length === 0) {
@@ -190,7 +183,7 @@ export function ManualScheduler() {
     const rows = employees.map(emp => [emp.name, ...Array(numberOfDays).fill(DEFAULT_SHIFT)]);
     setScheduleData({ headers, rows });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fields, form.watch('startDate'), form.watch('endDate')]);
+  }, [employees, form.watch('startDate'), form.watch('endDate')]);
 
   const handleAddNewEmployee = () => {
     setEditingEmployeeIndex(null);
@@ -223,7 +216,6 @@ export function ManualScheduler() {
     } else {
       append(result.data);
     }
-    form.trigger('employees');
     setEmployeeDialogOpen(false);
   };
   
@@ -431,6 +423,7 @@ export function ManualScheduler() {
                                                 <div key={option} className="flex items-center space-x-2">
                                                     <RadioGroupItem value={option} id={`r-${rowIndex}-${cellIndex}-${option}`} />
                                                     <Label htmlFor={`r-${rowIndex}-${cellIndex}-${option}`}>{option}</Label>
+
                                                 </div>
                                                 ))}
                                             </div>
