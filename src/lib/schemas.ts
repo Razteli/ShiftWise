@@ -37,3 +37,16 @@ export const scheduleConfigSchema = z
   });
 
 export type ScheduleConfig = z.infer<typeof scheduleConfigSchema>;
+
+export const manualScheduleSchema = z.object({
+  employees: z
+      .array(employeeSchema)
+      .min(1, 'At least one employee is required.'),
+  startDate: z.date({ required_error: 'Start date is required.' }),
+  endDate: z.date({ required_error: 'End date is required.' }),
+}).refine(data => data.endDate >= data.startDate, {
+    message: 'End date cannot be before start date.',
+    path: ['endDate'],
+});
+
+export type ManualScheduleFormValues = z.infer<typeof manualScheduleSchema>;

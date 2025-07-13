@@ -28,8 +28,8 @@ import {
   Pencil,
 } from 'lucide-react';
 import {
-  scheduleConfigSchema,
-  type ScheduleConfig,
+  manualScheduleSchema,
+  type ManualScheduleFormValues,
   employeeSchema,
   type Employee,
 } from '@/lib/schemas';
@@ -116,8 +116,8 @@ export function ManualScheduler() {
     day_off: 'Libur',
   };
 
-  const form = useForm<Pick<ScheduleConfig, 'employees' | 'startDate' | 'endDate'>>({
-    resolver: zodResolver(scheduleConfigSchema.pick({ employees: true, startDate: true, endDate: true })),
+  const form = useForm<ManualScheduleFormValues>({
+    resolver: zodResolver(manualScheduleSchema),
     defaultValues: {
       employees: [
         { name: 'Karyawan 1', status: 'active', remainingLeave: 0 },
@@ -136,6 +136,7 @@ export function ManualScheduler() {
     update: (index: number, emp: Employee) => {
         const emps = form.getValues('employees');
         emps[index] = emp;
+        form.setValue('employees', emps);
         form.setValue('employees', emps);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -178,6 +179,7 @@ export function ManualScheduler() {
 
   React.useEffect(() => {
     const { employees, startDate, endDate } = form.getValues();
+    if (!startDate || !endDate) return;
     const numberOfDays = differenceInDays(endDate, startDate) + 1;
     if (numberOfDays <= 0 || employees.length === 0) {
       setScheduleData(null);
