@@ -135,7 +135,11 @@ export function ManualScheduler() {
     name: 'employees',
   });
 
-  const employees = form.watch('employees');
+  const { watch } = form;
+  const employees = watch('employees');
+  const startDate = watch('startDate');
+  const endDate = watch('endDate');
+
 
   React.useEffect(() => {
     try {
@@ -172,7 +176,6 @@ export function ManualScheduler() {
 
 
   React.useEffect(() => {
-    const { startDate, endDate } = form.getValues();
     if (!startDate || !endDate) return;
     const numberOfDays = differenceInDays(endDate, startDate) + 1;
     if (numberOfDays <= 0 || employees.length === 0) {
@@ -184,7 +187,7 @@ export function ManualScheduler() {
     const rows = employees.map(emp => [emp.name, ...Array(numberOfDays).fill(DEFAULT_SHIFT)]);
     setScheduleData({ headers, rows });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [employees, form.watch('startDate'), form.watch('endDate')]);
+  }, [employees, startDate, endDate]);
 
   const handleAddNewEmployee = () => {
     setEditingEmployeeIndex(null);
@@ -293,7 +296,7 @@ export function ManualScheduler() {
             </p>
         </div>
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="lg:flex-1 lg:max-w-md w-full h-fit sticky top-20 bg-background z-10">
+            <div className="lg:flex-1 lg:max-w-md w-full">
             <Form {...form}>
             <form className="space-y-6">
                 <Card className="shadow-sm">
@@ -403,7 +406,7 @@ export function ManualScheduler() {
                             <TableHeader>
                             <TableRow>
                                 {scheduleData.headers.map((header, index) => (
-                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 text-center border-b', index === 0 ? 'sticky left-0 font-medium z-30 border-r' : 'z-20')}>
+                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 text-center border-b border-r', index === 0 ? 'sticky left-0 top-0 z-30' : 'sticky top-0 z-20')}>
                                     {header}
                                 </TableHead>
                                 ))}
@@ -413,7 +416,7 @@ export function ManualScheduler() {
                             {scheduleData.rows.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                 {row.map((cell, cellIndex) => (
-                                    <TableCell key={cellIndex} className={cn('p-0', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap border-r' : 'text-center')}>
+                                    <TableCell key={cellIndex} className={cn('p-0 border-r', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap' : 'text-center')}>
                                     {cellIndex === 0 ? ( <span>{cell}</span> ) : (
                                         <Popover open={openPopoverMap[`${rowIndex}-${cellIndex}`]} onOpenChange={isOpen => setOpenPopoverMap(p => ({ ...p, [`${rowIndex}-${cellIndex}`]: isOpen }))}>
                                         <PopoverTrigger asChild>
