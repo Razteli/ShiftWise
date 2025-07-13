@@ -301,7 +301,7 @@ export function ManualScheduler() {
                     <CardContent className="space-y-4">
                         <div className="relative max-h-60 overflow-y-auto rounded-md border">
                             <Table>
-                                <TableHeader className="sticky top-0 z-10 bg-card">
+                                <TableHeader className="sticky top-0 bg-card">
                                 <TableRow>
                                     <TableHead>Nama</TableHead>
                                     <TableHead>Status</TableHead>
@@ -400,10 +400,10 @@ export function ManualScheduler() {
                     {scheduleData ? (
                         <div className="relative w-full overflow-auto rounded-md border" style={{ maxHeight: '70vh' }}>
                         <Table>
-                            <TableHeader className="sticky top-0 z-20">
+                            <TableHeader>
                             <TableRow>
                                 {scheduleData.headers.map((header, index) => (
-                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 border-b border-r', index === 0 ? 'sticky left-0 z-10 font-medium' : 'text-center')}>
+                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 text-center border-b', index === 0 ? 'sticky left-0 font-medium z-30 border-r' : 'z-20')}>
                                     {header}
                                 </TableHead>
                                 ))}
@@ -413,11 +413,13 @@ export function ManualScheduler() {
                             {scheduleData.rows.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                 {row.map((cell, cellIndex) => (
-                                    <TableCell key={cellIndex} className={cn('p-0 border-r', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium' : 'text-center')}>
-                                    {cellIndex === 0 ? ( <span className="whitespace-nowrap">{cell}</span> ) : (
+                                    <TableCell key={cellIndex} className={cn('p-0', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap border-r' : 'text-center')}>
+                                    {cellIndex === 0 ? ( <span>{cell}</span> ) : (
                                         <Popover open={openPopoverMap[`${rowIndex}-${cellIndex}`]} onOpenChange={isOpen => setOpenPopoverMap(p => ({ ...p, [`${rowIndex}-${cellIndex}`]: isOpen }))}>
                                         <PopoverTrigger asChild>
-                                            <button className={cn(badgeVariants({ variant: getShiftBadgeVariant(cell) }), 'm-1 cursor-pointer hover:opacity-80 transition-opacity w-20 justify-center')}>{cell}</button>
+                                            <button className={cn(badgeVariants({ variant: getShiftBadgeVariant(cell) }), 'm-1 cursor-pointer hover:opacity-80 transition-opacity w-20 justify-center')}>
+                                                {cell}
+                                            </button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-2">
                                             <RadioGroup defaultValue={cell} onValueChange={newShift => handleShiftChange(rowIndex, cellIndex, newShift)}>
