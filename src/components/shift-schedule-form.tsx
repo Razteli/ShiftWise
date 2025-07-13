@@ -259,7 +259,7 @@ export function ShiftScheduleForm({
   };
 
   return (
-    <div className="h-fit sticky top-20">
+    <div className="h-fit sticky top-20 bg-background z-10">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="shadow-sm">

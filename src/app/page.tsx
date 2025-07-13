@@ -34,7 +34,7 @@ export default function Home({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="border-b sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+      <header className="border-b sticky top-0 bg-background/95 backdrop-blur-sm z-20">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo className="h-7 w-7 text-primary" />

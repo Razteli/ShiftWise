@@ -300,7 +300,7 @@ export function ManualScheduler() {
             </p>
         </div>
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="lg:flex-1 lg:max-w-md w-full h-fit sticky top-20">
+            <div className="lg:flex-1 lg:max-w-md w-full h-fit sticky top-20 bg-background z-10">
             <Form {...form}>
             <form className="space-y-6">
                 <Card className="shadow-sm">
