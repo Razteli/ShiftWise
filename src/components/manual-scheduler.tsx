@@ -42,7 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge, badgeVariants } from '@/components/ui/badge';
+import { badgeVariants } from '@/components/ui/badge';
 import {
   Popover,
   PopoverContent,
@@ -51,13 +51,6 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
 import {
   Dialog,
   DialogContent,
@@ -112,19 +105,14 @@ export function ManualScheduler() {
   const [currentEmployee, setCurrentEmployee] = React.useState<Partial<Employee>>({});
   const [dialogErrors, setDialogErrors] = React.useState<Partial<Employee>>({});
   
-  const statusMap: Record<Employee['status'], string> = {
-    active: 'Aktif',
-    on_leave: 'Cuti',
-    day_off: 'Libur',
-  };
 
   const form = useForm<ManualScheduleFormValues>({
     resolver: zodResolver(manualScheduleSchema),
     defaultValues: {
       employees: [
-        { name: 'Karyawan 1', status: 'active', remainingLeave: 12 },
-        { name: 'Karyawan 2', status: 'active', remainingLeave: 12 },
-        { name: 'Karyawan 3', status: 'active', remainingLeave: 12 },
+        { name: 'Karyawan 1', remainingLeave: 12 },
+        { name: 'Karyawan 2', remainingLeave: 12 },
+        { name: 'Karyawan 3', remainingLeave: 12 },
       ],
       startDate: new Date(),
       endDate: new Date(new Date().setDate(new Date().getDate() + 6)),
@@ -190,8 +178,6 @@ export function ManualScheduler() {
     
     const rows = employees.map(emp => {
         let defaultFill = DEFAULT_SHIFT;
-        if(emp.status === 'on_leave') defaultFill = 'Cuti';
-        if(emp.status === 'day_off') defaultFill = 'Libur';
         return [emp.name, ...Array(numberOfDays).fill(defaultFill)]
     });
 
@@ -217,7 +203,7 @@ export function ManualScheduler() {
 
   const handleAddNewEmployee = () => {
     setEditingEmployeeIndex(null);
-    setCurrentEmployee({ name: '', status: 'active', remainingLeave: 12 });
+    setCurrentEmployee({ name: '', remainingLeave: 12 });
     setDialogErrors({});
     setEmployeeDialogOpen(true);
   };
@@ -252,26 +238,30 @@ export function ManualScheduler() {
   const handleShiftChange = (rowIndex: number, cellIndex: number, newShift: string) => {
     if (!scheduleData) return;
 
-    const newRows = scheduleData.rows.map(r => [...r]);
-    const oldShift = newRows[rowIndex][cellIndex];
-    newRows[rowIndex][cellIndex] = newShift;
+    setScheduleData(prevData => {
+       if (!prevData) return null;
+       const newRows = prevData.rows.map(r => [...r]);
+       const oldShift = newRows[rowIndex][cellIndex];
+       newRows[rowIndex][cellIndex] = newShift;
 
-    const employeeName = newRows[rowIndex][0];
-    const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
+       const employeeName = newRows[rowIndex][0];
+       const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
     
-    if (employeeFormIndex !== -1) {
-      const employee = getValues(`employees.${employeeFormIndex}`);
-      let newRemainingLeave = employee.remainingLeave ?? 0;
+       if (employeeFormIndex !== -1) {
+         const employee = getValues(`employees.${employeeFormIndex}`);
+         let newRemainingLeave = employee.remainingLeave ?? 0;
 
-      if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
-        newRemainingLeave += 1;
-      } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
-        newRemainingLeave -= 1;
-      }
-      setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
-    }
+         if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
+           newRemainingLeave += 1;
+         } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
+           newRemainingLeave -= 1;
+         }
+         setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
+       }
+      
+       return { ...prevData, rows: newRows };
+    });
     
-    setScheduleData(prev => prev ? { ...prev, rows: newRows } : null);
     setOpenPopoverMap({}); // Close all popovers
   };
 
@@ -339,7 +329,7 @@ export function ManualScheduler() {
             </p>
         </div>
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="lg:flex-1 lg:max-w-md w-full">
+            <div className="lg:flex-1 lg:max-w-md w-full sticky top-20 bg-background z-10">
             <Form {...form}>
             <form className="space-y-6">
                 <Card className="shadow-sm">
@@ -350,7 +340,6 @@ export function ManualScheduler() {
                                 <TableHeader className="sticky top-0 bg-card">
                                 <TableRow>
                                     <TableHead>Nama</TableHead>
-                                    <TableHead>Status</TableHead>
                                     <TableHead>Sisa Cuti</TableHead>
                                     <TableHead>Jml. Libur</TableHead>
                                     <TableHead className="text-right">Aksi</TableHead>
@@ -360,7 +349,6 @@ export function ManualScheduler() {
                                 {fields.map((field, index) => (
                                     <TableRow key={field.id}>
                                     <TableCell className="font-medium">{field.name}</TableCell>
-                                    <TableCell><Badge variant={field.status === 'active' ? 'secondary' : 'outline'} className="capitalize">{statusMap[field.status]}</Badge></TableCell>
                                     <TableCell className="text-center">{field.remainingLeave ?? '-'}</TableCell>
                                     <TableCell className="text-center">{offDayAndLeaveCounts.get(field.name)?.offDays ?? '-'}</TableCell>
                                     <TableCell className="text-right">
@@ -418,12 +406,6 @@ export function ManualScheduler() {
                     <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="name" className="text-right">Nama</Label>
                     <div className="col-span-3"><Input id="name" value={currentEmployee.name || ''} onChange={e => setCurrentEmployee(c => ({...c, name: e.target.value}))} />
                         {dialogErrors.name && <p className="text-sm text-destructive mt-1">{dialogErrors.name}</p>}
-                    </div>
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4"><Label htmlFor="status" className="text-right">Status</Label>
-                    <div className="col-span-3"><Select value={currentEmployee.status} onValueChange={(v: Employee['status']) => setCurrentEmployee(c => ({...c, status: v}))}><SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent><SelectItem value="active">Aktif</SelectItem><SelectItem value="on_leave">Cuti</SelectItem><SelectItem value="day_off">Libur</SelectItem></SelectContent>
-                        </Select>{dialogErrors.status && <p className="text-sm text-destructive mt-1">{dialogErrors.status}</p>}
                     </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -493,7 +475,7 @@ export function ManualScheduler() {
                             {scheduleData.rows.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                 {row.map((cell, cellIndex) => (
-                                    <TableCell key={cellIndex} className={cn('p-0 border-r', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap' : 'text-center')}>
+                                    <TableCell key={cellIndex} className={cn('p-0 border-r', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap border-b' : 'text-center border-b')}>
                                     {cellIndex === 0 ? ( <span>{cell}</span> ) : (
                                         <Popover open={openPopoverMap[`${rowIndex}-${cellIndex}`]} onOpenChange={isOpen => setOpenPopoverMap(p => ({ ...p, [`${rowIndex}-${cellIndex}`]: isOpen }))}>
                                         <PopoverTrigger asChild>

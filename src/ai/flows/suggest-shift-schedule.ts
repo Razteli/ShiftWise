@@ -15,7 +15,7 @@ const SuggestShiftScheduleInputSchema = z.object({
   employees: z
     .string()
     .describe(
-      'A JSON string representing the list of employees, including their name, and status (active, on_leave, day_off).'
+      'A JSON string representing the list of employees, including their name.'
     ),
   employeesPerShift: z
     .string()
@@ -72,17 +72,14 @@ ATURAN PALING PENTING (HARUS DIPATUHI):
     \`\`\`json
     {{{employeesPerShift}}}
     \`\`\`
-2.  **DAFTAR KARYAWAN**: Gunakan JSON ini.
-    - Hanya jadwalkan shift kerja ('Pagi', 'Siang', 'Malam') untuk karyawan dengan status 'active'.
-    - Jika status karyawan adalah 'on_leave', Anda HARUS mengisi semua hari mereka dengan 'Cuti'.
-    - Jika status karyawan adalah 'day_off', Anda HARUS mengisi semua hari mereka dengan 'Libur'.
+2.  **DAFTAR KARYAWAN**: Gunakan daftar karyawan dari JSON ini. Semua karyawan dianggap aktif dan dapat dijadwalkan.
     \`\`\`json
     {{{employees}}}
     \`\`\`
-3.  **KESEIMBANGAN**: Sebisa mungkin, berikan jumlah total shift ('Pagi', 'Siang', 'Malam') dan hari 'Libur' yang merata untuk semua karyawan 'active'.
+3.  **KESEIMBANGAN**: Sebisa mungkin, berikan jumlah total shift ('Pagi', 'Siang', 'Malam') dan hari 'Libur' yang merata untuk semua karyawan.
 
 {{#if monthlyOffDays}}
-4.  **HARI LIBUR MAKSIMAL**: Setiap karyawan 'active' harus mendapatkan maksimal {{monthlyOffDays}} hari 'Libur' selama periode jadwal ini. Jangan berikan lebih dari jumlah ini.
+4.  **HARI LIBUR MAKSIMAL**: Setiap karyawan harus mendapatkan maksimal {{monthlyOffDays}} hari 'Libur' selama periode jadwal ini. Jangan berikan lebih dari jumlah ini.
 {{/if}}
 
 {{#if customRule}}
@@ -94,6 +91,7 @@ FORMAT OUTPUT (WAJIB):
 - Kembalikan HANYA string CSV mentah. Tidak ada teks atau penjelasan lain.
 - Header: \`Karyawan,Hari 1,Hari 2,...,Hari {{numberOfDays}}\`
 - Nilai sel harus salah satu dari: \`Pagi\`, \`Siang\`, \`Malam\`, \`Libur\`, atau \`Cuti\`.
+- Gunakan 'Cuti' jika sisa cuti karyawan memungkinkan dan sesuai dengan kebutuhan jadwal, atau jika diminta dalam aturan khusus.
 `,
 });
 

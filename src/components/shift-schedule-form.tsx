@@ -57,14 +57,6 @@ import {
   employeeSchema,
   type Employee,
 } from '@/lib/schemas';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from './ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -77,11 +69,10 @@ interface ShiftScheduleFormProps {
 }
 
 const defaultEmployee: Omit<Employee, 'name'> = {
-  status: 'active',
   remainingLeave: 12,
 };
 
-const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v4';
+const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v5';
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
@@ -97,21 +88,15 @@ export function ShiftScheduleForm({
     useState<Partial<Employee>>(defaultEmployee);
   const [dialogErrors, setDialogErrors] = useState<Partial<Employee>>({});
 
-  const statusMap: Record<Employee['status'], string> = {
-    active: 'Aktif',
-    on_leave: 'Cuti',
-    day_off: 'Libur',
-  };
-
   const form = useForm<ScheduleConfig>({
     resolver: zodResolver(scheduleConfigSchema),
     defaultValues: {
       employees: [
-        { name: 'Alice', status: 'active', remainingLeave: 12 },
-        { name: 'Bob', status: 'active', remainingLeave: 12 },
-        { name: 'Charlie', status: 'active', remainingLeave: 12 },
-        { name: 'David', status: 'active', remainingLeave: 12 },
-        { name: 'Eve', status: 'on_leave', remainingLeave: 12 },
+        { name: 'Alice', remainingLeave: 12 },
+        { name: 'Bob', remainingLeave: 12 },
+        { name: 'Charlie', remainingLeave: 12 },
+        { name: 'David', remainingLeave: 12 },
+        { name: 'Eve', remainingLeave: 12 },
       ],
       employeesPerShift: {
         morning: 1,
@@ -277,7 +262,6 @@ export function ShiftScheduleForm({
                       <TableRow>
                         <TableHead className="w-10 text-center">No.</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Status</TableHead>
                         <TableHead>Sisa Cuti</TableHead>
                         <TableHead>Libur (Jadwal)</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -291,18 +275,6 @@ export function ShiftScheduleForm({
                             <TableCell className="text-center">{index + 1}</TableCell>
                             <TableCell className="font-medium">
                               {field.name}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  field.status === 'active'
-                                    ? 'secondary'
-                                    : 'outline'
-                                }
-                                className="capitalize"
-                              >
-                                {statusMap[field.status]}
-                              </Badge>
                             </TableCell>
                             <TableCell className="text-center">
                               {field.remainingLeave ?? '-'}
@@ -391,33 +363,6 @@ export function ShiftScheduleForm({
                     {dialogErrors.name && (
                       <p className="text-sm text-destructive mt-1">
                         {dialogErrors.name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="status" className="text-right">
-                    Status
-                  </Label>
-                  <div className="col-span-3">
-                    <Select
-                      value={currentEmployee.status}
-                      onValueChange={(value: Employee['status']) =>
-                        setCurrentEmployee({ ...currentEmployee, status: value })
-                      }
-                    >
-                      <SelectTrigger id="status">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Aktif</SelectItem>
-                        <SelectItem value="on_leave">Cuti</SelectItem>
-                        <SelectItem value="day_off">Libur</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {dialogErrors.status && (
-                      <p className="text-sm text-destructive mt-1">
-                        {dialogErrors.status}
                       </p>
                     )}
                   </div>
