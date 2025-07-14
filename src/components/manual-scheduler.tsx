@@ -250,32 +250,28 @@ export function ManualScheduler() {
   };
   
   const handleShiftChange = (rowIndex: number, cellIndex: number, newShift: string) => {
-    setScheduleData(prevData => {
-      if (!prevData) return null;
-      const newRows = prevData.rows.map(r => [...r]);
-      
-      const oldShift = newRows[rowIndex][cellIndex];
-      newRows[rowIndex][cellIndex] = newShift;
+    if (!scheduleData) return;
 
-      // Update remaining leave count
-      const employeeName = newRows[rowIndex][0];
-      const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
-      
-      if (employeeFormIndex !== -1) {
-        const employee = getValues(`employees.${employeeFormIndex}`);
-        let newRemainingLeave = employee.remainingLeave ?? 0;
+    const newRows = scheduleData.rows.map(r => [...r]);
+    const oldShift = newRows[rowIndex][cellIndex];
+    newRows[rowIndex][cellIndex] = newShift;
 
-        if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
-          newRemainingLeave += 1;
-        } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
-          newRemainingLeave -= 1;
-        }
-        
-        setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
+    const employeeName = newRows[rowIndex][0];
+    const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
+    
+    if (employeeFormIndex !== -1) {
+      const employee = getValues(`employees.${employeeFormIndex}`);
+      let newRemainingLeave = employee.remainingLeave ?? 0;
+
+      if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
+        newRemainingLeave += 1;
+      } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
+        newRemainingLeave -= 1;
       }
-      
-      return { ...prevData, rows: newRows };
-    });
+      setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
+    }
+    
+    setScheduleData(prev => prev ? { ...prev, rows: newRows } : null);
     setOpenPopoverMap({}); // Close all popovers
   };
 
