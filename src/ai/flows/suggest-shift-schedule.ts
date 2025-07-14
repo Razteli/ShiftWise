@@ -5,7 +5,7 @@
  *
  * - suggestShiftSchedule - A function that generates shift schedule suggestions.
  * - SuggestShiftScheduleInput - The input type for the suggestShiftSchedule function.
- * - SuggestShiftScheduleOutput - The return type for the suggestShiftSchedule function.
+ * - SuggestShiftScheduleOutput - The return type for the suggestShiftschedule function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -72,7 +72,10 @@ ATURAN PALING PENTING (HARUS DIPATUHI):
     \`\`\`json
     {{{employeesPerShift}}}
     \`\`\`
-2.  **DAFTAR KARYAWAN**: Gunakan JSON ini. Hanya jadwalkan karyawan dengan status 'active'.
+2.  **DAFTAR KARYAWAN**: Gunakan JSON ini.
+    - Hanya jadwalkan shift kerja ('Pagi', 'Siang', 'Malam') untuk karyawan dengan status 'active'.
+    - Jika status karyawan adalah 'on_leave', Anda HARUS mengisi semua hari mereka dengan 'Cuti'.
+    - Jika status karyawan adalah 'day_off', Anda HARUS mengisi semua hari mereka dengan 'Libur'.
     \`\`\`json
     {{{employees}}}
     \`\`\`
@@ -90,7 +93,7 @@ ATURAN TAMBAHAN DARI PENGGUNA:
 FORMAT OUTPUT (WAJIB):
 - Kembalikan HANYA string CSV mentah. Tidak ada teks atau penjelasan lain.
 - Header: \`Karyawan,Hari 1,Hari 2,...,Hari {{numberOfDays}}\`
-- Nilai sel harus salah satu dari: \`Pagi\`, \`Siang\`, \`Malam\`, atau \`Libur\`.
+- Nilai sel harus salah satu dari: \`Pagi\`, \`Siang\`, \`Malam\`, \`Libur\`, atau \`Cuti\`.
 `,
 });
 
