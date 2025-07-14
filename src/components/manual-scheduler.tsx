@@ -77,7 +77,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const SHIFT_OPTIONS = ['Pagi', 'Siang', 'Malam', 'Libur'];
+const SHIFT_OPTIONS = ['Pagi', 'Siang', 'Malam', 'Libur', 'Cuti'];
 const DEFAULT_SHIFT = 'Libur';
 const LOCAL_STORAGE_KEY_MANUAL = 'shiftwise-manual-config-v1';
 
@@ -94,6 +94,7 @@ const getShiftBadgeVariant = (
   if (lowerShift.includes('siang')) return 'accent';
   if (lowerShift.includes('malam')) return 'destructive';
   if (lowerShift.includes('libur')) return 'outline';
+  if (lowerShift.includes('cuti')) return 'secondary';
   return 'secondary';
 };
 
@@ -135,26 +136,10 @@ export function ManualScheduler() {
     name: 'employees',
   });
 
-  const { watch } = form;
+  const { watch, getValues, setValue } = form;
   const employees = watch('employees');
   const startDate = watch('startDate');
   const endDate = watch('endDate');
-
-  const offDayCounts = React.useMemo(() => {
-    const counts = new Map<string, number>();
-    if (!scheduleData || !employees) return counts;
-
-    scheduleData.rows.forEach((row, index) => {
-      const employeeName = row[0];
-      if (employeeName) {
-        const offDays = row.slice(1).filter(cell => cell.toLowerCase() === 'libur').length;
-        counts.set(employeeName, offDays);
-      }
-    });
-
-    return counts;
-  }, [scheduleData, employees]);
-
 
   React.useEffect(() => {
     try {
@@ -202,10 +187,33 @@ export function ManualScheduler() {
     }
 
     const headers = ['Karyawan', ...Array.from({ length: numberOfDays }, (_, i) => `Hari ${i + 1}`)];
-    const rows = employees.map(emp => [emp.name, ...Array(numberOfDays).fill(DEFAULT_SHIFT)]);
+    
+    const rows = employees.map(emp => {
+        let defaultFill = DEFAULT_SHIFT;
+        if(emp.status === 'on_leave') defaultFill = 'Cuti';
+        if(emp.status === 'day_off') defaultFill = 'Libur';
+        return [emp.name, ...Array(numberOfDays).fill(defaultFill)]
+    });
+
     setScheduleData({ headers, rows });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(employees), startDate, endDate, form.formState.isValid]);
+  
+  const offDayAndLeaveCounts = React.useMemo(() => {
+    const counts = new Map<string, { offDays: number; leaveDays: number }>();
+    if (!scheduleData || !employees) return counts;
+
+    scheduleData.rows.forEach((row) => {
+      const employeeName = row[0];
+      if (employeeName) {
+        const offDays = row.slice(1).filter(cell => cell.toLowerCase() === 'libur').length;
+        const leaveDays = row.slice(1).filter(cell => cell.toLowerCase() === 'cuti').length;
+        counts.set(employeeName, { offDays, leaveDays });
+      }
+    });
+    return counts;
+  }, [scheduleData, employees]);
+
 
   const handleAddNewEmployee = () => {
     setEditingEmployeeIndex(null);
@@ -245,7 +253,27 @@ export function ManualScheduler() {
     setScheduleData(prevData => {
       if (!prevData) return null;
       const newRows = prevData.rows.map(r => [...r]);
+      
+      const oldShift = newRows[rowIndex][cellIndex];
       newRows[rowIndex][cellIndex] = newShift;
+
+      // Update remaining leave count
+      const employeeName = newRows[rowIndex][0];
+      const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
+      
+      if (employeeFormIndex !== -1) {
+        const employee = getValues(`employees.${employeeFormIndex}`);
+        let newRemainingLeave = employee.remainingLeave ?? 0;
+
+        if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
+          newRemainingLeave += 1;
+        } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
+          newRemainingLeave -= 1;
+        }
+        
+        setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
+      }
+      
       return { ...prevData, rows: newRows };
     });
     setOpenPopoverMap({}); // Close all popovers
@@ -292,6 +320,7 @@ export function ManualScheduler() {
           else if (cellText.includes('siang')) fillColor = [255, 191, 0];
           else if (cellText.includes('malam')) fillColor = [220, 53, 69];
           else if (cellText.includes('libur')) fillColor = [248, 249, 250];
+          else if (cellText.includes('cuti')) fillColor = [108, 117, 125];
 
           if (fillColor) {
             doc.setFillColor(fillColor[0], fillColor[1], fillColor[2]);
@@ -337,7 +366,7 @@ export function ManualScheduler() {
                                     <TableCell className="font-medium">{field.name}</TableCell>
                                     <TableCell><Badge variant={field.status === 'active' ? 'secondary' : 'outline'} className="capitalize">{statusMap[field.status]}</Badge></TableCell>
                                     <TableCell className="text-center">{field.remainingLeave ?? '-'}</TableCell>
-                                    <TableCell className="text-center">{offDayCounts.get(field.name) ?? '-'}</TableCell>
+                                    <TableCell className="text-center">{offDayAndLeaveCounts.get(field.name)?.offDays ?? '-'}</TableCell>
                                     <TableCell className="text-right">
                                         <Button type="button" variant="ghost" size="icon" onClick={() => handleEditEmployee(index)} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button>
                                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8 text-destructive/80 hover:text-destructive"><Trash className="h-4 w-4" /></Button>

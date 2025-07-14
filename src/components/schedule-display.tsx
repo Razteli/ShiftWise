@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -62,7 +63,7 @@ type ScheduleData = {
   rows: string[][];
 };
 
-const SHIFT_OPTIONS = ['Pagi', 'Siang', 'Malam', 'Libur'];
+const SHIFT_OPTIONS = ['Pagi', 'Siang', 'Malam', 'Libur', 'Cuti'];
 
 const getShiftBadgeVariant = (
   shift: string
@@ -72,6 +73,7 @@ const getShiftBadgeVariant = (
   if (lowerShift.includes('siang')) return 'accent';
   if (lowerShift.includes('malam')) return 'destructive';
   if (lowerShift.includes('libur')) return 'outline';
+  if (lowerShift.includes('cuti')) return 'secondary';
   return 'secondary';
 };
 
@@ -209,6 +211,8 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
             fillColor = [220, 53, 69]; // Destructive color (red)
           } else if (cellText.includes('libur')) {
             fillColor = [248, 249, 250]; // A very light grey for outline
+          } else if (cellText.includes('cuti')) {
+            fillColor = [108, 117, 125]; // Secondary color (grey-ish)
           }
 
           if (fillColor) {
@@ -236,6 +240,7 @@ export function ScheduleDisplay({ result, config }: ScheduleDisplayProps) {
       { text: 'Siang', color: [255, 191, 0] },
       { text: 'Malam', color: [220, 53, 69] },
       { text: 'Libur', color: [248, 249, 250] },
+      { text: 'Cuti', color: [108, 117, 125] },
     ];
 
     let legendX = 14;
