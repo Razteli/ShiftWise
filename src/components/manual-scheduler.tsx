@@ -72,7 +72,7 @@ import {
 
 const SHIFT_OPTIONS = ['Pagi', 'Siang', 'Malam', 'Libur', 'Cuti'];
 const DEFAULT_SHIFT = 'Libur';
-const LOCAL_STORAGE_KEY_MANUAL = 'shiftwise-manual-config-v1';
+const LOCAL_STORAGE_KEY_MANUAL = 'shiftwise-manual-config-v2';
 
 type ScheduleData = {
   headers: string[];
@@ -104,7 +104,7 @@ export function ManualScheduler() {
   >(null);
   const [currentEmployee, setCurrentEmployee] = React.useState<Partial<Employee>>({});
   const [dialogErrors, setDialogErrors] = React.useState<Partial<Employee>>({});
-  
+
 
   const form = useForm<ManualScheduleFormValues>({
     resolver: zodResolver(manualScheduleSchema),
@@ -118,7 +118,7 @@ export function ManualScheduler() {
       endDate: new Date(new Date().setDate(new Date().getDate() + 6)),
     },
   });
-  
+
   const { fields, append, remove, update } = useFieldArray({
     control: form.control,
     name: 'employees',
@@ -175,7 +175,7 @@ export function ManualScheduler() {
     }
 
     const headers = ['Karyawan', ...Array.from({ length: numberOfDays }, (_, i) => `Hari ${i + 1}`)];
-    
+
     const rows = employees.map(emp => {
         let defaultFill = DEFAULT_SHIFT;
         return [emp.name, ...Array(numberOfDays).fill(defaultFill)]
@@ -184,7 +184,7 @@ export function ManualScheduler() {
     setScheduleData({ headers, rows });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(employees), startDate, endDate, form.formState.isValid]);
-  
+
   const offDayAndLeaveCounts = React.useMemo(() => {
     const counts = new Map<string, { offDays: number; leaveDays: number }>();
     if (!scheduleData || !employees) return counts;
@@ -234,34 +234,30 @@ export function ManualScheduler() {
     }
     setEmployeeDialogOpen(false);
   };
-  
+
   const handleShiftChange = (rowIndex: number, cellIndex: number, newShift: string) => {
     if (!scheduleData) return;
 
-    setScheduleData(prevData => {
-       if (!prevData) return null;
-       const newRows = prevData.rows.map(r => [...r]);
-       const oldShift = newRows[rowIndex][cellIndex];
-       newRows[rowIndex][cellIndex] = newShift;
+    const newRows = scheduleData.rows.map(r => [...r]);
+    const oldShift = newRows[rowIndex][cellIndex];
+    newRows[rowIndex][cellIndex] = newShift;
 
-       const employeeName = newRows[rowIndex][0];
-       const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
-    
-       if (employeeFormIndex !== -1) {
-         const employee = getValues(`employees.${employeeFormIndex}`);
-         let newRemainingLeave = employee.remainingLeave ?? 0;
+    const employeeName = newRows[rowIndex][0];
+    const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
 
-         if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
-           newRemainingLeave += 1;
-         } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
-           newRemainingLeave -= 1;
-         }
-         setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
-       }
-      
-       return { ...prevData, rows: newRows };
-    });
-    
+    if (employeeFormIndex !== -1) {
+      const employee = getValues(`employees.${employeeFormIndex}`);
+      let newRemainingLeave = employee.remainingLeave ?? 0;
+
+      if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
+        newRemainingLeave += 1;
+      } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
+        newRemainingLeave -= 1;
+      }
+      setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
+    }
+
+    setScheduleData({ ...scheduleData, rows: newRows });
     setOpenPopoverMap({}); // Close all popovers
   };
 
@@ -329,7 +325,7 @@ export function ManualScheduler() {
             </p>
         </div>
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-            <div className="lg:flex-1 lg:max-w-md w-full sticky top-20 bg-background z-10">
+            <div className="lg:flex-1 lg:max-w-md w-full">
             <Form {...form}>
             <form className="space-y-6">
                 <Card className="shadow-sm">
@@ -362,7 +358,7 @@ export function ManualScheduler() {
                         </div>
                         <Button type="button" variant="outline" className="w-full" onClick={handleAddNewEmployee}><Plus className="mr-2" />Tambah Karyawan</Button>
                         <FormMessage>{form.formState.errors.employees?.root?.message || form.formState.errors.employees?.message}</FormMessage>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
                             <FormField control={form.control} name="startDate" render={({ field }) => (
                                 <FormItem className="flex flex-col"><FormLabel>Tanggal Mulai</FormLabel>
@@ -465,7 +461,12 @@ export function ManualScheduler() {
                             <TableHeader>
                             <TableRow>
                                 {scheduleData.headers.map((header, index) => (
-                                <TableHead key={index} className={cn('whitespace-nowrap bg-card p-2 text-center border-b border-r', index === 0 ? 'sticky left-0 top-0 z-30' : 'sticky top-0 z-20')}>
+                                <TableHead key={index} className={cn(
+                                  'whitespace-nowrap bg-card p-2 text-center border-b border-r',
+                                  index === 0
+                                    ? 'sticky left-0 top-0 z-30'
+                                    : 'sticky top-0 z-20'
+                                )}>
                                     {header}
                                 </TableHead>
                                 ))}
@@ -475,7 +476,10 @@ export function ManualScheduler() {
                             {scheduleData.rows.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                 {row.map((cell, cellIndex) => (
-                                    <TableCell key={cellIndex} className={cn('p-0 border-r', cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap border-b' : 'text-center border-b')}>
+                                    <TableCell key={cellIndex} className={cn(
+                                      'p-0 border-b border-r',
+                                      cellIndex === 0 ? 'sticky left-0 z-10 bg-card p-2 font-medium whitespace-nowrap' : 'text-center'
+                                    )}>
                                     {cellIndex === 0 ? ( <span>{cell}</span> ) : (
                                         <Popover open={openPopoverMap[`${rowIndex}-${cellIndex}`]} onOpenChange={isOpen => setOpenPopoverMap(p => ({ ...p, [`${rowIndex}-${cellIndex}`]: isOpen }))}>
                                         <PopoverTrigger asChild>
