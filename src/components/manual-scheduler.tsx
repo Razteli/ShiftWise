@@ -125,10 +125,7 @@ export function ManualScheduler() {
   });
 
   const { watch, getValues, setValue } = form;
-  const employees = watch('employees');
-  const startDate = watch('startDate');
-  const endDate = watch('endDate');
-
+  
   React.useEffect(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -141,19 +138,26 @@ export function ManualScheduler() {
             endDate: savedData.endDate ? new Date(savedData.endDate) : new Date(new Date().setDate(new Date().getDate() + 6)),
           };
           form.reset(valuesToLoad);
+          generateInitialSchedule(valuesToLoad);
+        } else {
+            generateInitialSchedule(form.getValues());
         }
       }
     } catch (error) {
       console.error('Failed to load form data', error);
+      generateInitialSchedule(form.getValues());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
-    const subscription = form.watch(value => {
+    const subscription = form.watch((value, { name, type }) => {
        try {
         if (typeof window !== 'undefined') {
           window.localStorage.setItem(LOCAL_STORAGE_KEY_MANUAL, JSON.stringify(value));
+        }
+        if (name === 'startDate' || name === 'endDate') {
+            generateInitialSchedule(form.getValues());
         }
       } catch (error) {
         console.error('Failed to save form data', error);
@@ -161,33 +165,30 @@ export function ManualScheduler() {
     });
     return () => subscription.unsubscribe();
   }, [form]);
-
-
-  React.useEffect(() => {
-    if (!startDate || !endDate || !form.formState.isValid) {
+  
+  const generateInitialSchedule = (values: ManualScheduleFormValues) => {
+    const { employees, startDate, endDate } = values;
+    if (!startDate || !endDate || !form.formState.isValid || employees.length === 0) {
       setScheduleData(null);
       return;
     }
+
     const numberOfDays = differenceInDays(endDate, startDate) + 1;
-    if (numberOfDays <= 0 || employees.length === 0) {
-      setScheduleData(null);
-      return;
+    if (numberOfDays <= 0) {
+        setScheduleData(null);
+        return;
     }
 
     const headers = ['Karyawan', ...Array.from({ length: numberOfDays }, (_, i) => `Hari ${i + 1}`)];
-
-    const rows = employees.map(emp => {
-        let defaultFill = DEFAULT_SHIFT;
-        return [emp.name, ...Array(numberOfDays).fill(defaultFill)]
-    });
-
+    const rows = employees.map(emp => [emp.name, ...Array(numberOfDays).fill(DEFAULT_SHIFT)]);
+    
     setScheduleData({ headers, rows });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(employees), startDate, endDate, form.formState.isValid]);
+  };
+
 
   const offDayAndLeaveCounts = React.useMemo(() => {
     const counts = new Map<string, { offDays: number; leaveDays: number }>();
-    if (!scheduleData || !employees) return counts;
+    if (!scheduleData || !form.getValues('employees')) return counts;
 
     scheduleData.rows.forEach((row) => {
       const employeeName = row[0];
@@ -198,7 +199,7 @@ export function ManualScheduler() {
       }
     });
     return counts;
-  }, [scheduleData, employees]);
+  }, [scheduleData, form.getValues('employees')]);
 
 
   const handleAddNewEmployee = () => {
@@ -227,22 +228,53 @@ export function ManualScheduler() {
       setDialogErrors(errors);
       return;
     }
+    
     if (editingEmployeeIndex !== null) {
       update(editingEmployeeIndex, result.data);
     } else {
       append(result.data);
+      if (scheduleData) {
+        const numberOfDays = scheduleData.headers.length - 1;
+        const newRow = [result.data.name, ...Array(numberOfDays).fill(DEFAULT_SHIFT)];
+        setScheduleData(prevData => {
+            if (!prevData) return null;
+            return {
+                ...prevData,
+                rows: [...prevData.rows, newRow]
+            }
+        });
+      } else {
+        generateInitialSchedule(form.getValues());
+      }
     }
     setEmployeeDialogOpen(false);
   };
 
+  const handleRemoveEmployee = (index: number) => {
+    const employeeName = fields[index].name;
+    remove(index);
+    setScheduleData(prevData => {
+        if(!prevData) return null;
+        return {
+            ...prevData,
+            rows: prevData.rows.filter(row => row[0] !== employeeName)
+        };
+    });
+  }
+
   const handleShiftChange = (rowIndex: number, cellIndex: number, newShift: string) => {
     if (!scheduleData) return;
+    
+    // Create a deep copy to avoid mutation issues
+    const newScheduleData = { 
+        headers: [...scheduleData.headers], 
+        rows: scheduleData.rows.map(r => [...r]) 
+    };
+    
+    const oldShift = newScheduleData.rows[rowIndex][cellIndex];
+    newScheduleData.rows[rowIndex][cellIndex] = newShift;
 
-    const newRows = scheduleData.rows.map(r => [...r]);
-    const oldShift = newRows[rowIndex][cellIndex];
-    newRows[rowIndex][cellIndex] = newShift;
-
-    const employeeName = newRows[rowIndex][0];
+    const employeeName = newScheduleData.rows[rowIndex][0];
     const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
 
     if (employeeFormIndex !== -1) {
@@ -254,10 +286,11 @@ export function ManualScheduler() {
       } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
         newRemainingLeave -= 1;
       }
+      
       setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
     }
-
-    setScheduleData({ ...scheduleData, rows: newRows });
+    
+    setScheduleData(newScheduleData);
     setOpenPopoverMap({}); // Close all popovers
   };
 
@@ -349,7 +382,7 @@ export function ManualScheduler() {
                                     <TableCell className="text-center">{offDayAndLeaveCounts.get(field.name)?.offDays ?? '-'}</TableCell>
                                     <TableCell className="text-right">
                                         <Button type="button" variant="ghost" size="icon" onClick={() => handleEditEmployee(index)} className="h-8 w-8"><Pencil className="h-4 w-4" /></Button>
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-8 w-8 text-destructive/80 hover:text-destructive"><Trash className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveEmployee(index)} className="h-8 w-8 text-destructive/80 hover:text-destructive"><Trash className="h-4 w-4" /></Button>
                                     </TableCell>
                                     </TableRow>
                                 ))}
@@ -462,9 +495,9 @@ export function ManualScheduler() {
                             <TableRow>
                                 {scheduleData.headers.map((header, index) => (
                                 <TableHead key={index} className={cn(
-                                  'whitespace-nowrap bg-card p-2 text-center border-b border-r',
+                                  'whitespace-nowrap bg-muted p-2 text-center border-b border-r',
                                   index === 0
-                                    ? 'sticky left-0 top-0 z-30'
+                                    ? 'sticky left-0 top-0 z-30 bg-card'
                                     : 'sticky top-0 z-20'
                                 )}>
                                     {header}
@@ -474,7 +507,7 @@ export function ManualScheduler() {
                             </TableHeader>
                             <TableBody>
                             {scheduleData.rows.map((row, rowIndex) => (
-                                <TableRow key={rowIndex}>
+                                <TableRow key={row[0]}>
                                 {row.map((cell, cellIndex) => (
                                     <TableCell key={cellIndex} className={cn(
                                       'p-0 border-b border-r',
