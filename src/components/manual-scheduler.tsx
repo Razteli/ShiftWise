@@ -124,51 +124,11 @@ export function ManualScheduler() {
     name: 'employees',
   });
 
-  const { watch, getValues, setValue } = form;
-  
-  React.useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const savedDataJSON = window.localStorage.getItem(LOCAL_STORAGE_KEY_MANUAL);
-        if (savedDataJSON) {
-          const savedData = JSON.parse(savedDataJSON);
-          const valuesToLoad = {
-            ...savedData,
-            startDate: savedData.startDate ? new Date(savedData.startDate) : new Date(),
-            endDate: savedData.endDate ? new Date(savedData.endDate) : new Date(new Date().setDate(new Date().getDate() + 6)),
-          };
-          form.reset(valuesToLoad);
-          generateInitialSchedule(valuesToLoad);
-        } else {
-            generateInitialSchedule(form.getValues());
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load form data', error);
-      generateInitialSchedule(form.getValues());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  React.useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
-       try {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(LOCAL_STORAGE_KEY_MANUAL, JSON.stringify(value));
-        }
-        if (name === 'startDate' || name === 'endDate') {
-            generateInitialSchedule(form.getValues());
-        }
-      } catch (error) {
-        console.error('Failed to save form data', error);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
+  const { getValues, setValue } = form;
   
   const generateInitialSchedule = (values: ManualScheduleFormValues) => {
     const { employees, startDate, endDate } = values;
-    if (!startDate || !endDate || !form.formState.isValid || employees.length === 0) {
+    if (!startDate || !endDate || employees.length === 0) {
       setScheduleData(null);
       return;
     }
@@ -185,10 +145,54 @@ export function ManualScheduler() {
     setScheduleData({ headers, rows });
   };
 
+  // Effect for initialization from localStorage and initial schedule generation
+  React.useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const savedDataJSON = window.localStorage.getItem(LOCAL_STORAGE_KEY_MANUAL);
+        if (savedDataJSON) {
+          const savedData = JSON.parse(savedDataJSON);
+          const valuesToLoad = {
+            ...savedData,
+            startDate: savedData.startDate ? new Date(savedData.startDate) : new Date(),
+            endDate: savedData.endDate ? new Date(savedData.endDate) : new Date(new Date().setDate(new Date().getDate() + 6)),
+          };
+          form.reset(valuesToLoad);
+          generateInitialSchedule(valuesToLoad); // Generate schedule from loaded data
+        } else {
+            generateInitialSchedule(form.getValues()); // Generate with default values if nothing is saved
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load or initialize form data', error);
+      generateInitialSchedule(form.getValues()); // Fallback
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
+
+  // Effect for saving to localStorage and regenerating schedule on date change
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+       try {
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(LOCAL_STORAGE_KEY_MANUAL, JSON.stringify(value));
+        }
+        if (name === 'startDate' || name === 'endDate') {
+          if (form.formState.isValid) {
+            generateInitialSchedule(value as ManualScheduleFormValues);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to save form data', error);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
 
   const offDayAndLeaveCounts = React.useMemo(() => {
     const counts = new Map<string, { offDays: number; leaveDays: number }>();
-    if (!scheduleData || !form.getValues('employees')) return counts;
+    if (!scheduleData || !getValues('employees')) return counts;
 
     scheduleData.rows.forEach((row) => {
       const employeeName = row[0];
@@ -199,7 +203,7 @@ export function ManualScheduler() {
       }
     });
     return counts;
-  }, [scheduleData, form.getValues('employees')]);
+  }, [scheduleData, getValues]);
 
 
   const handleAddNewEmployee = () => {
@@ -263,34 +267,31 @@ export function ManualScheduler() {
   }
 
   const handleShiftChange = (rowIndex: number, cellIndex: number, newShift: string) => {
-    if (!scheduleData) return;
-    
-    // Create a deep copy to avoid mutation issues
-    const newScheduleData = { 
-        headers: [...scheduleData.headers], 
-        rows: scheduleData.rows.map(r => [...r]) 
-    };
-    
-    const oldShift = newScheduleData.rows[rowIndex][cellIndex];
-    newScheduleData.rows[rowIndex][cellIndex] = newShift;
+    setScheduleData(prevData => {
+        if (!prevData) return null;
 
-    const employeeName = newScheduleData.rows[rowIndex][0];
-    const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
+        const newRows = prevData.rows.map(r => [...r]);
+        const oldShift = newRows[rowIndex][cellIndex];
+        newRows[rowIndex][cellIndex] = newShift;
 
-    if (employeeFormIndex !== -1) {
-      const employee = getValues(`employees.${employeeFormIndex}`);
-      let newRemainingLeave = employee.remainingLeave ?? 0;
+        const employeeName = newRows[rowIndex][0];
+        const employeeFormIndex = getValues('employees').findIndex(e => e.name === employeeName);
 
-      if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
-        newRemainingLeave += 1;
-      } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
-        newRemainingLeave -= 1;
-      }
-      
-      setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
-    }
-    
-    setScheduleData(newScheduleData);
+        if (employeeFormIndex !== -1) {
+            const employee = getValues(`employees.${employeeFormIndex}`);
+            let newRemainingLeave = employee.remainingLeave ?? 0;
+
+            if (oldShift.toLowerCase() === 'cuti' && newShift.toLowerCase() !== 'cuti') {
+                newRemainingLeave += 1;
+            } else if (oldShift.toLowerCase() !== 'cuti' && newShift.toLowerCase() === 'cuti') {
+                newRemainingLeave -= 1;
+            }
+
+            setValue(`employees.${employeeFormIndex}.remainingLeave`, newRemainingLeave, { shouldDirty: true, shouldValidate: true });
+        }
+        
+        return { ...prevData, rows: newRows };
+    });
     setOpenPopoverMap({}); // Close all popovers
   };
 
@@ -389,7 +390,7 @@ export function ManualScheduler() {
                                 </TableBody>
                             </Table>
                         </div>
-                        <Button type="button" variant="outline" className="w-full" onClick={handleAddNewEmployee}><Plus className="mr-2" />Tambah Karyawan</Button>
+                        <Button type="button" variant="outline" className="w-full" onClick={handleAddNewEmployee}><Plus className="mr-2 h-4 w-4" />Tambah Karyawan</Button>
                         <FormMessage>{form.formState.errors.employees?.root?.message || form.formState.errors.employees?.message}</FormMessage>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
