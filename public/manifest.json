@@ -1,0 +1,21 @@
+{
+  "name": "ShiftWise",
+  "short_name": "ShiftWise",
+  "description": "AI-powered employee shift scheduling",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8EAF6",
+  "theme_color": "#3F51B5",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

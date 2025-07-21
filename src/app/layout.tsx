@@ -12,6 +12,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'ShiftWise',
   description: 'AI-powered employee shift scheduling',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -21,7 +22,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <meta name="application-name" content="ShiftWise" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="ShiftWise" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#3F51B5" />
+      </head>
       <body className={cn('antialiased', inter.className)} suppressHydrationWarning>
         {children}
         <Toaster />
