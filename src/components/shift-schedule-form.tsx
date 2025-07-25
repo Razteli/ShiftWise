@@ -93,11 +93,18 @@ export function ShiftScheduleForm({
   const [dialogErrors, setDialogErrors] = useState<Partial<Employee>>({});
   const { user } = useAuth();
   
-  const [generationCount, setGenerationCount] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    const savedCount = window.localStorage.getItem(`${GENERATION_COUNT_KEY}-${user?.uid}`);
-    return savedCount ? parseInt(savedCount, 10) : 0;
-  });
+  const [generationCount, setGenerationCount] = useState(0);
+
+  // Effect to load generation count from localStorage when user changes
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      const savedCount = window.localStorage.getItem(`${GENERATION_COUNT_KEY}-${user.uid}`);
+      setGenerationCount(savedCount ? parseInt(savedCount, 10) : 0);
+    } else if (!user) {
+      // Reset count if user logs out
+      setGenerationCount(0);
+    }
+  }, [user]);
 
   const form = useForm<ScheduleConfig>({
     resolver: zodResolver(scheduleConfigSchema),
@@ -147,13 +154,6 @@ export function ShiftScheduleForm({
     return counts;
   }, [schedule]);
 
-  // Effect to update generation count when user changes
-  useEffect(() => {
-    if (user && typeof window !== 'undefined') {
-      const savedCount = window.localStorage.getItem(`${GENERATION_COUNT_KEY}-${user.uid}`);
-      setGenerationCount(savedCount ? parseInt(savedCount, 10) : 0);
-    }
-  }, [user]);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -244,6 +244,15 @@ export function ShiftScheduleForm({
   };
 
   const onSubmit = (values: ScheduleConfig) => {
+     if (!user) {
+      toast({
+        title: 'Harap Login',
+        description: 'Anda harus login untuk membuat jadwal.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (generationCount >= MAX_GENERATIONS) {
       toast({
         title: 'Batas Penggunaan Tercapai',
@@ -264,7 +273,7 @@ export function ShiftScheduleForm({
       } else if (data) {
         const newCount = generationCount + 1;
         setGenerationCount(newCount);
-        if (user && typeof window !== 'undefined') {
+        if (typeof window !== 'undefined') {
           window.localStorage.setItem(`${GENERATION_COUNT_KEY}-${user.uid}`, newCount.toString());
         }
         onScheduleGenerated(data, values);
@@ -277,7 +286,7 @@ export function ShiftScheduleForm({
   };
 
   const remainingGenerations = MAX_GENERATIONS - generationCount;
-  const isGenerationDisabled = isPending || remainingGenerations <= 0;
+  const isGenerationDisabled = isPending || (user && remainingGenerations <= 0);
 
   return (
     <div className="h-fit sticky top-20 bg-background z-10">
@@ -642,14 +651,18 @@ export function ShiftScheduleForm({
               ) : (
                 <Wand2 className="mr-2 h-4 w-4" />
               )}
-              {remainingGenerations > 0 ? 'Generate Schedule with AI' : 'Batas Penggunaan Tercapai'}
+              { !user || remainingGenerations > 0 ? 'Generate Schedule with AI' : 'Batas Penggunaan Tercapai' }
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              Sisa jatah generate jadwal gratis: {remainingGenerations} dari {MAX_GENERATIONS}.
-            </p>
+             {user && (
+              <p className="text-xs text-center text-muted-foreground">
+                Sisa jatah generate jadwal gratis: {remainingGenerations} dari {MAX_GENERATIONS}.
+              </p>
+            )}
           </div>
         </form>
       </Form>
     </div>
   );
 }
+
+    
