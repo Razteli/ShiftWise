@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type FC } from 'react';
@@ -13,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Calculator, RotateCcw, Plus, Trash } from 'lucide-react';
+import { Calculator, RotateCcw, Plus, Trash, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Accordion,
@@ -29,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Badge } from './ui/badge';
 
 interface Result {
   total: number;
@@ -385,13 +387,6 @@ const GilliesCalculator = () => {
         const offDays = Number(inputs.offDays) || 0;
         const workHours = Number(inputs.workHours) || 0;
         const correction = Number(inputs.correction) || 0;
-
-        const A = avgCareHours;
-        const B = avgPatients;
-        const C = 365;
-        const D = offDays;
-        const E = workHours;
-        const F_percent = correction;
 
         if ((C - D) * E === 0) {
             setResult({ total: 0 });
@@ -948,6 +943,12 @@ const WISNCalculator = () => {
 };
 
 
+const ProBadge = () => (
+  <Badge variant="outline" className="ml-2 bg-accent/20 border-accent/50 text-accent font-bold text-xs">
+    Pro
+  </Badge>
+);
+
 export function NursingCalculator() {
   return (
     <div>
@@ -966,10 +967,10 @@ export function NursingCalculator() {
       >
         <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-4">
           <TabsTrigger value="depkes">Depkes RI</TabsTrigger>
-          <TabsTrigger value="douglas">Douglas</TabsTrigger>
-          <TabsTrigger value="gillies">Gillies</TabsTrigger>
-          <TabsTrigger value="operating_room">Kamar Operasi</TabsTrigger>
-          <TabsTrigger value="wisn">WISN</TabsTrigger>
+          <TabsTrigger value="douglas" disabled>Douglas <ProBadge /></TabsTrigger>
+          <TabsTrigger value="gillies" disabled>Gillies <ProBadge /></TabsTrigger>
+          <TabsTrigger value="operating_room" disabled>Kamar Operasi <ProBadge /></TabsTrigger>
+          <TabsTrigger value="wisn" disabled>WISN <ProBadge /></TabsTrigger>
         </TabsList>
         <TabsContent value="depkes">
           <DepkesCalculator />

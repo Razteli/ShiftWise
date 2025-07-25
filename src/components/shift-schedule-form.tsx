@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect, useMemo } from 'react';
@@ -62,6 +63,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { Textarea } from './ui/textarea';
+import { useAuth } from '@/context/auth-context';
 
 interface ShiftScheduleFormProps {
   onScheduleGenerated: (result: ScheduleResult, config: ScheduleConfig) => void;
@@ -73,6 +75,8 @@ const defaultEmployee: Omit<Employee, 'name'> = {
 };
 
 const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v5';
+const GENERATION_COUNT_KEY = 'shiftwise-generation-count';
+const MAX_GENERATIONS = 2;
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
@@ -87,6 +91,13 @@ export function ShiftScheduleForm({
   const [currentEmployee, setCurrentEmployee] =
     useState<Partial<Employee>>(defaultEmployee);
   const [dialogErrors, setDialogErrors] = useState<Partial<Employee>>({});
+  const { user } = useAuth();
+  
+  const [generationCount, setGenerationCount] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const savedCount = window.localStorage.getItem(`${GENERATION_COUNT_KEY}-${user?.uid}`);
+    return savedCount ? parseInt(savedCount, 10) : 0;
+  });
 
   const form = useForm<ScheduleConfig>({
     resolver: zodResolver(scheduleConfigSchema),
@@ -135,6 +146,14 @@ export function ShiftScheduleForm({
     }
     return counts;
   }, [schedule]);
+
+  // Effect to update generation count when user changes
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      const savedCount = window.localStorage.getItem(`${GENERATION_COUNT_KEY}-${user.uid}`);
+      setGenerationCount(savedCount ? parseInt(savedCount, 10) : 0);
+    }
+  }, [user]);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -225,6 +244,15 @@ export function ShiftScheduleForm({
   };
 
   const onSubmit = (values: ScheduleConfig) => {
+    if (generationCount >= MAX_GENERATIONS) {
+      toast({
+        title: 'Batas Penggunaan Tercapai',
+        description: 'Anda telah mencapai batas maksimal generate jadwal untuk akun gratis. Upgrade ke Pro untuk penggunaan tanpa batas.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     startTransition(async () => {
       const { data, error } = await generateAndAnalyzeSchedule(values);
       if (error) {
@@ -234,14 +262,22 @@ export function ShiftScheduleForm({
           variant: 'destructive',
         });
       } else if (data) {
+        const newCount = generationCount + 1;
+        setGenerationCount(newCount);
+        if (user && typeof window !== 'undefined') {
+          window.localStorage.setItem(`${GENERATION_COUNT_KEY}-${user.uid}`, newCount.toString());
+        }
         onScheduleGenerated(data, values);
         toast({
-          title: 'Success!',
-          description: 'Your shift schedule has been generated.',
+          title: 'Sukses!',
+          description: 'Jadwal shift Anda telah berhasil dibuat.',
         });
       }
     });
   };
+
+  const remainingGenerations = MAX_GENERATIONS - generationCount;
+  const isGenerationDisabled = isPending || remainingGenerations <= 0;
 
   return (
     <div className="h-fit sticky top-20 bg-background z-10">
@@ -599,14 +635,19 @@ export function ShiftScheduleForm({
             </CardContent>
           </Card>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Wand2 className="mr-2 h-4 w-4" />
-            )}
-            Generate Schedule with AI
-          </Button>
+          <div className="space-y-2">
+            <Button type="submit" className="w-full" disabled={isGenerationDisabled}>
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              {remainingGenerations > 0 ? 'Generate Schedule with AI' : 'Batas Penggunaan Tercapai'}
+            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Sisa jatah generate jadwal gratis: {remainingGenerations} dari {MAX_GENERATIONS}.
+            </p>
+          </div>
         </form>
       </Form>
     </div>
