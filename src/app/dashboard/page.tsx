@@ -13,14 +13,20 @@ import { ScheduleAnalyzer } from '@/components/schedule-analyzer';
 import { Badge } from '@/components/ui/badge';
 import { ManualScheduler } from '@/components/manual-scheduler';
 import { Button } from '@/components/ui/button';
-import { User } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
   const [scheduleData, setScheduleData] = useState<{
     result: ScheduleResult;
     config: ScheduleConfig;
   } | null>(null);
+  
+  const { user, logout, loading } = useAuth();
+  const router = useRouter();
+
 
   const handleScheduleGenerated = (
     result: ScheduleResult,
@@ -28,6 +34,21 @@ export default function DashboardPage() {
   ) => {
     setScheduleData({ result, config });
   };
+  
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+  };
+  
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>
+  }
+
+  if (!user) {
+    // This should be handled by AuthGuard, but as a fallback:
+    router.push('/login');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -45,11 +66,17 @@ export default function DashboardPage() {
               </Badge>
             </div>
           </div>
-          <Button variant="ghost" size="icon" asChild>
-             <Link href="/account">
-                <User />
-             </Link>
-          </Button>
+           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" asChild>
+               <Link href="/account">
+                  <User />
+               </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4"/>
+              Logout
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -106,4 +133,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
