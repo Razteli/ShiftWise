@@ -78,7 +78,8 @@ const defaultEmployee: Omit<Employee, 'name'> = {
 
 const LOCAL_STORAGE_KEY = 'shiftwise-form-config-v5';
 const GENERATION_COUNT_KEY = 'shiftwise-generation-count';
-const MAX_GENERATIONS = 2;
+const MAX_GENERATIONS_FREE = 2;
+const MAX_EMPLOYEES_FREE = 10;
 
 export function ShiftScheduleForm({
   onScheduleGenerated,
@@ -211,6 +212,14 @@ export function ShiftScheduleForm({
   });
 
   const handleAddNewEmployee = () => {
+    if (fields.length >= MAX_EMPLOYEES_FREE) {
+      toast({
+        title: 'Batas Karyawan Tercapai',
+        description: `Pengguna gratis hanya dapat menambahkan hingga ${MAX_EMPLOYEES_FREE} karyawan. Upgrade ke Pro untuk menambah lebih banyak.`,
+        variant: 'destructive',
+      });
+      return;
+    }
     setEditingEmployeeIndex(null);
     setCurrentEmployee({ name: '', ...defaultEmployee });
     setDialogErrors({});
@@ -255,7 +264,7 @@ export function ShiftScheduleForm({
       return;
     }
 
-    if (generationCount >= MAX_GENERATIONS) {
+    if (generationCount >= MAX_GENERATIONS_FREE) {
       toast({
         title: 'Batas Penggunaan Tercapai',
         description: 'Anda telah mencapai batas maksimal generate jadwal untuk akun gratis. Upgrade ke Pro untuk penggunaan tanpa batas.',
@@ -287,7 +296,7 @@ export function ShiftScheduleForm({
     });
   };
 
-  const remainingGenerations = MAX_GENERATIONS - generationCount;
+  const remainingGenerations = MAX_GENERATIONS_FREE - generationCount;
   const isGenerationDisabled = isPending || (user && remainingGenerations <= 0);
 
   return (
@@ -657,7 +666,7 @@ export function ShiftScheduleForm({
             </Button>
              {user && (
               <p className="text-xs text-center text-muted-foreground">
-                Sisa jatah generate jadwal gratis: {remainingGenerations} dari {MAX_GENERATIONS}.
+                Sisa jatah generate jadwal gratis: {remainingGenerations} dari {MAX_GENERATIONS_FREE}.
               </p>
             )}
              {user && remainingGenerations <= 0 && (
