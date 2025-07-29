@@ -47,6 +47,7 @@ import {
   Plus,
   Trash,
   Pencil,
+  Sparkles,
 } from 'lucide-react';
 import {
   generateAndAnalyzeSchedule,
@@ -64,6 +65,7 @@ import { format } from 'date-fns';
 import { Calendar } from './ui/calendar';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '@/context/auth-context';
+import Link from 'next/link';
 
 interface ShiftScheduleFormProps {
   onScheduleGenerated: (result: ScheduleResult, config: ScheduleConfig) => void;
@@ -294,9 +296,9 @@ export function ShiftScheduleForm({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle>Employee Management</CardTitle>
+              <CardTitle>Manajemen Karyawan</CardTitle>
               <CardDescription>
-                Add, remove, and configure your employees.
+                Tambah, hapus, dan konfigurasi karyawan Anda.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -306,10 +308,10 @@ export function ShiftScheduleForm({
                     <TableHeader className="sticky top-0 z-10 bg-card">
                       <TableRow>
                         <TableHead className="w-10 text-center">No.</TableHead>
-                        <TableHead>Name</TableHead>
+                        <TableHead>Nama</TableHead>
                         <TableHead>Sisa Cuti</TableHead>
                         <TableHead>Libur (Jadwal)</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="text-right">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -362,7 +364,7 @@ export function ShiftScheduleForm({
                   onClick={handleAddNewEmployee}
                 >
                   <Plus className="mr-2" />
-                  Add Employee
+                  Tambah Karyawan
                 </Button>
                 <FormMessage>
                   {form.formState.errors.employees?.root?.message ||
@@ -451,17 +453,17 @@ export function ShiftScheduleForm({
 
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle>Shift Configuration</CardTitle>
+              <CardTitle>Konfigurasi Shift</CardTitle>
               <CardDescription>
-                Define the shift structure and rules.
+                Tentukan struktur dan aturan shift.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <FormItem>
-                  <FormLabel>Employees per Shift</FormLabel>
+                  <FormLabel>Karyawan per Shift</FormLabel>
                   <FormDescription className="text-xs !mt-0">
-                    Set the number of employees required for each shift.
+                    Atur jumlah karyawan yang dibutuhkan untuk setiap shift.
                   </FormDescription>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <FormField
@@ -521,7 +523,7 @@ export function ShiftScheduleForm({
                     name="startDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Start Date</FormLabel>
+                        <FormLabel>Tanggal Mulai</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -535,7 +537,7 @@ export function ShiftScheduleForm({
                                 {field.value ? (
                                   format(field.value, 'PPP')
                                 ) : (
-                                  <span>Pick a date</span>
+                                  <span>Pilih tanggal</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -559,7 +561,7 @@ export function ShiftScheduleForm({
                     name="endDate"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>End Date</FormLabel>
+                        <FormLabel>Tanggal Selesai</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -573,7 +575,7 @@ export function ShiftScheduleForm({
                                 {field.value ? (
                                   format(field.value, 'PPP')
                                 ) : (
-                                  <span>Pick a date</span>
+                                  <span>Pilih tanggal</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -624,17 +626,17 @@ export function ShiftScheduleForm({
                   name="customRule"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Custom Rules</FormLabel>
+                      <FormLabel>Aturan Khusus (Custom Rules)</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="e.g., 'Alice cannot work night shifts', 'Ensure at least one senior is on duty during weekends'."
+                          placeholder="e.g., 'Alice tidak bisa shift malam', 'Pastikan ada setidaknya satu senior yang bertugas di akhir pekan'."
                           className="resize-none"
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Add any specific constraints or rules for the AI to
-                        consider.
+                        Tambahkan batasan atau aturan spesifik apa pun untuk
+                        dipertimbangkan oleh AI.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -658,11 +660,17 @@ export function ShiftScheduleForm({
                 Sisa jatah generate jadwal gratis: {remainingGenerations} dari {MAX_GENERATIONS}.
               </p>
             )}
+             {user && remainingGenerations <= 0 && (
+                <Button variant="secondary" className="w-full bg-accent/20 border border-accent/50 text-accent hover:bg-accent/30" asChild>
+                    <Link href="#">
+                        <Sparkles className="mr-2"/>
+                        Upgrade ke Pro
+                    </Link>
+                </Button>
+             )}
           </div>
         </form>
       </Form>
     </div>
   );
 }
-
-    

@@ -31,6 +31,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from './ui/badge';
+import Link from 'next/link';
 
 interface Result {
   total: number;
@@ -873,7 +874,7 @@ const WISNCalculator = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div><Label>Hari Kerja/Tahun</Label><Input type="number" value={inputs.workDaysPerYear} onChange={e => setInputs(i => ({...i, workDaysPerYear: e.target.value}))} /></div>
             <div><Label>Total Hari Non-Kerja</Label><Input type="number" value={inputs.nonWorkDaysPerYear} onChange={e => setInputs(i => ({...i, nonWorkDaysPerYear: e.target.value}))} /></div>
-            <div><Label>Jam Kerja/Hari</Label><Input type="number" value={inputs.hoursPerWorkDay} onChange={e => setInputs(i => ({...i, hoursPerWorkDay: e.target.value}))} /></div>
+            <div><Label>Jam Kerja/Hari</Label><Input type="number" value={inputs.hoursPerDay} onChange={e => setInputs(i => ({...i, hoursPerWorkDay: e.target.value}))} /></div>
           </div>
         </div>
         
@@ -961,33 +962,57 @@ export function NursingCalculator() {
           metode standar.
         </p>
       </div>
-      <Tabs
-        defaultValue="depkes"
-        className="w-full max-w-2xl mx-auto border rounded-lg p-4 bg-card shadow-sm"
-      >
-        <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-4">
-          <TabsTrigger value="depkes">Depkes RI</TabsTrigger>
-          <TabsTrigger value="douglas" disabled>Douglas <ProBadge /></TabsTrigger>
-          <TabsTrigger value="gillies" disabled>Gillies <ProBadge /></TabsTrigger>
-          <TabsTrigger value="operating_room" disabled>Kamar Operasi <ProBadge /></TabsTrigger>
-          <TabsTrigger value="wisn" disabled>WISN <ProBadge /></TabsTrigger>
-        </TabsList>
-        <TabsContent value="depkes">
-          <DepkesCalculator />
-        </TabsContent>
-        <TabsContent value="douglas">
-          <DouglasCalculator />
-        </TabsContent>
-        <TabsContent value="gillies">
-          <GilliesCalculator />
-        </TabsContent>
-        <TabsContent value="operating_room">
-          <OperatingRoomCalculator />
-        </TabsContent>
-        <TabsContent value="wisn">
-          <WISNCalculator />
-        </TabsContent>
-      </Tabs>
+      <div className="w-full max-w-2xl mx-auto space-y-4">
+        <Tabs
+          defaultValue="depkes"
+          className="border rounded-lg p-4 bg-card shadow-sm"
+        >
+          <TabsList className="grid h-auto w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 mb-4">
+            <TabsTrigger value="depkes">Depkes RI</TabsTrigger>
+            <TabsTrigger value="douglas" disabled>Douglas <ProBadge /></TabsTrigger>
+            <TabsTrigger value="gillies" disabled>Gillies <ProBadge /></TabsTrigger>
+            <TabsTrigger value="operating_room" disabled>Kamar Operasi <ProBadge /></TabsTrigger>
+            <TabsTrigger value="wisn" disabled>WISN <ProBadge /></TabsTrigger>
+          </TabsList>
+          <TabsContent value="depkes">
+            <DepkesCalculator />
+          </TabsContent>
+          <TabsContent value="douglas">
+            <DouglasCalculator />
+          </TabsContent>
+          <TabsContent value="gillies">
+            <GilliesCalculator />
+          </TabsContent>
+          <TabsContent value="operating_room">
+            <OperatingRoomCalculator />
+          </TabsContent>
+          <TabsContent value="wisn">
+            <WISNCalculator />
+          </TabsContent>
+        </Tabs>
+        
+        <Card className="bg-gradient-to-br from-primary/10 to-transparent">
+          <CardHeader className="flex-row items-center gap-4">
+            <div className="p-3 rounded-full bg-accent/20 border border-accent/50">
+              <Sparkles className="h-6 w-6 text-accent" />
+            </div>
+            <div>
+              <CardTitle className="text-primary">Buka Semua Metode Kalkulator</CardTitle>
+              <CardDescription>
+                Upgrade ke Pro untuk mendapatkan akses ke metode Douglas, Gillies, dan lainnya.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardFooter>
+              <Button className="w-full" asChild>
+                <Link href="#">
+                  <Sparkles className="mr-2" />
+                  Upgrade ke Pro
+                </Link>
+              </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
