@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShiftScheduleForm } from '@/components/shift-schedule-form';
 import { ScheduleDisplay } from '@/components/schedule-display';
 import type { ScheduleResult } from '../actions';
@@ -27,6 +27,12 @@ export default function DashboardPage() {
   const { user, logout, loading } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
 
   const handleScheduleGenerated = (
     result: ScheduleResult,
@@ -40,14 +46,8 @@ export default function DashboardPage() {
     router.push('/login');
   };
   
-  if (loading) {
+  if (loading || !user) {
     return <div className="flex h-screen items-center justify-center">Loading...</div>
-  }
-
-  if (!user) {
-    // This should be handled by AuthGuard, but as a fallback:
-    router.push('/login');
-    return null;
   }
 
   return (
