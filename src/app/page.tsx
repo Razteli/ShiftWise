@@ -71,7 +71,7 @@ export default function LandingPage() {
             <div className="relative rounded-xl border bg-card shadow-2xl shadow-primary/10">
                  <Image
                     src="https://placehold.co/1200x600.png"
-                    data-ai-hint="application screenshot"
+                    data-ai-hint="schedule calendar"
                     alt="ShiftWise application screenshot"
                     width={1200}
                     height={600}
