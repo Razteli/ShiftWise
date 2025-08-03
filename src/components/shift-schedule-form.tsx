@@ -671,7 +671,7 @@ export function ShiftScheduleForm({
             )}
              {user && remainingGenerations <= 0 && (
                 <Button variant="secondary" className="w-full bg-accent/20 border border-accent/50 text-accent hover:bg-accent/30" asChild>
-                    <Link href="#">
+                    <Link href="/account">
                         <Sparkles className="mr-2"/>
                         Upgrade ke Pro
                     </Link>

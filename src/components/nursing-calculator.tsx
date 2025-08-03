@@ -1005,7 +1005,7 @@ export function NursingCalculator() {
           </CardHeader>
           <CardFooter>
               <Button className="w-full" asChild>
-                <Link href="#">
+                <Link href="/account">
                   <Sparkles className="mr-2" />
                   Upgrade ke Pro
                 </Link>

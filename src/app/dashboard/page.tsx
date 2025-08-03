@@ -13,7 +13,7 @@ import { ScheduleAnalyzer } from '@/components/schedule-analyzer';
 import { Badge } from '@/components/ui/badge';
 import { ManualScheduler } from '@/components/manual-scheduler';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
@@ -24,7 +24,7 @@ export default function DashboardPage() {
     config: ScheduleConfig;
   } | null>(null);
   
-  const { user, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,11 +39,6 @@ export default function DashboardPage() {
     config: ScheduleConfig
   ) => {
     setScheduleData({ result, config });
-  };
-  
-  const handleLogout = async () => {
-    await logout();
-    router.push('/login');
   };
   
   if (loading || !user) {
@@ -71,10 +66,6 @@ export default function DashboardPage() {
                <Link href="/account">
                   <User />
                </Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4"/>
-              Logout
             </Button>
           </div>
         </div>
