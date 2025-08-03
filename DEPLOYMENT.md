@@ -2,15 +2,26 @@
 
 Dokumen ini berisi panduan untuk mendeploy aplikasi ini ke Vercel, terutama mengenai cara mengatur Environment Variable yang dibutuhkan.
 
-## Masalah Umum: Gagal Generate Jadwal oleh AI
+## Variabel yang Dibutuhkan
 
-Setelah di-deploy, seringkali fitur AI gagal berfungsi. Ini biasanya terjadi karena aplikasi di server Vercel tidak memiliki akses ke `GOOGLE_API_KEY`.
+Aplikasi ini memerlukan dua set environment variables:
 
-Kunci API ini bersifat rahasia dan tidak disimpan di dalam kode (untuk alasan keamanan). Oleh karena itu, Anda perlu memberitahu Vercel tentang kunci ini secara manual melalui pengaturan di dashboard Vercel.
+1.  **Konfigurasi Firebase (Client-side)**: Ini dibutuhkan agar aplikasi di browser bisa terhubung ke Firebase untuk autentikasi.
+2.  **Kunci API Google (Server-side)**: Ini dibutuhkan oleh Genkit di server untuk bisa memanggil AI.
 
-## Cara Mengatur GOOGLE_API_KEY di Vercel
+Berikut adalah daftar lengkap variabel yang perlu Anda atur di Vercel:
 
-Ikuti langkah-langkah berikut untuk menambahkan kunci API Anda ke Vercel:
+-   `FIREBASE_API_KEY`
+-   `FIREBASE_AUTH_DOMAIN`
+-   `FIREBASE_PROJECT_ID`
+-   `FIREBASE_STORAGE_BUCKET`
+-   `FIREBASE_MESSAGING_SENDER_ID`
+-   `FIREBASE_APP_ID`
+-   `GOOGLE_API_KEY`
+
+## Cara Mengatur Environment Variables di Vercel
+
+Ikuti langkah-langkah berikut untuk menambahkan semua kunci yang dibutuhkan ke proyek Vercel Anda:
 
 1.  **Login ke Vercel**: Buka [vercel.com](https://vercel.com) dan login ke akun Anda.
 
@@ -20,15 +31,16 @@ Ikuti langkah-langkah berikut untuk menambahkan kunci API Anda ke Vercel:
 
 4.  **Pilih Environment Variables**: Di menu sebelah kiri, klik **Environment Variables**.
 
-5.  **Tambahkan Variabel Baru**:
-    *   **Name**: Ketik `GOOGLE_API_KEY` (pastikan namanya persis seperti ini).
-    *   **Value**: Tempelkan (paste) kunci API Google Anda yang valid ke kolom ini.
-    *   Biarkan opsi lainnya (seperti *Environment*) pada pengaturan default, kecuali jika Anda memiliki kebutuhan khusus.
+5.  **Tambahkan Setiap Variabel**: Anda perlu mengulangi proses ini untuk **SETIAP** variabel dari daftar di atas.
+    *   **Name**: Ketik nama variabel (contoh: `FIREBASE_API_KEY`).
+    *   **Value**: Tempelkan (paste) nilai yang sesuai untuk variabel tersebut.
+    *   Biarkan opsi lainnya pada pengaturan default.
+    *   Klik **Save**.
 
-6.  **Simpan**: Klik tombol **Save** untuk menyimpan variabel.
+6.  **Ulangi** untuk semua variabel lainnya (`FIREBASE_AUTH_DOMAIN`, `GOOGLE_API_KEY`, dst.).
 
-7.  **Redeploy (Deploy Ulang)**: Agar perubahan environment variable ini diterapkan, Anda perlu melakukan deploy ulang.
+7.  **Redeploy (Deploy Ulang)**: Setelah semua variabel berhasil ditambahkan, Anda perlu melakukan deploy ulang agar perubahan ini diterapkan.
     *   Buka tab **Deployments** di proyek Anda.
     *   Cari deployment terbaru, klik menu titik tiga (...) di sebelah kanannya, lalu pilih **Redeploy**.
 
-Setelah proses deploy ulang selesai, aplikasi Anda seharusnya sudah bisa mengakses Google API dengan benar dan fitur AI akan berfungsi seperti yang diharapkan.
+Setelah proses deploy ulang selesai, aplikasi Anda seharusnya sudah bisa mengakses Firebase dan Google AI dengan benar.

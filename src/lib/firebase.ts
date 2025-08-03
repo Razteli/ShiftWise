@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBUKnZy-MOiD8peOgb8Lf3NccPZ9ygsXl4",
-  authDomain: "shiftwise-ae8fd.firebaseapp.com",
-  projectId: "shiftwise-ae8fd",
-  storageBucket: "shiftwise-ae8fd.firebasestorage.app",
-  messagingSenderId: "651059593737",
-  appId: "1:651059593737:web:d74117514e98a10ff26ed8"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
